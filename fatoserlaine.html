@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO - PROFESSORA ERLAINE</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 16px;
+        background: white;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="h-14 w-14 flex items-center justify-center shrink-0">
+          <img src="logo.png" alt="Logo Escola Estadual Mestra Aurora" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
+          <span id="fallback-logo-text" class="hidden text-xs font-bold text-slate-700 border border-slate-300 rounded-xl p-1 bg-slate-50 text-center">EEMA</span>
+        </div>
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600">Escola Estadual Mestra Aurora • Carbonita - MG</span>
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h1>
+          <p class="text-xs font-medium text-slate-500">Professora Erlaine</p>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-semibold">
+        <button onclick="switchTab('afericao')" id="tab-btn-afericao" class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-white text-indigo-600 shadow-xs font-bold">
+          <i data-lucide="zap" class="w-4 h-4"></i> Aferição Rápida
+        </button>
+        <button onclick="switchTab('turmas')" id="tab-btn-turmas" class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold">
+          <i data-lucide="users" class="w-4 h-4"></i> Alunos & Turmas
+        </button>
+        <button onclick="switchTab('relatorios')" id="tab-btn-relatorios" class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Relatórios
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 no-print">
+
+    <section id="tab-afericao" class="space-y-5">
+      
+      <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Turma:</span>
+            <div class="inline-flex p-1 bg-slate-100 rounded-xl text-xs font-medium overflow-x-auto max-w-full custom-scroll" id="class-pills"></div>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="pickRandomStudent()" class="flex-1 sm:flex-initial px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Sortear Aluno
+            </button>
+            <div class="relative flex-1 sm:w-64">
+              <input type="text" id="student-search" placeholder="Filtrar aluno..." oninput="filterStudentChips()" class="w-full text-xs pl-8 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50/60 p-2.5 rounded-2xl border border-slate-100">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Selecione o Estudante:</span>
+            <span id="student-total-label" class="text-[11px] font-semibold text-slate-500"></span>
+          </div>
+          <div id="student-chips-container" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto custom-scroll pr-1"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col items-center justify-between text-center relative overflow-hidden min-h-[380px]">
+          
+          <div class="w-full flex items-center justify-between mb-4">
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              <button onclick="setOperation('all')" id="op-btn-all" class="px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-xs font-bold">Misto</button>
+              <button onclick="setOperation('mult')" id="op-btn-mult" class="px-3 py-1 rounded-lg text-slate-600">Multiplicação</button>
+              <button onclick="setOperation('div')" id="op-btn-div" class="px-3 py-1 rounded-lg text-slate-600">Divisão</button>
+            </div>
+
+            <button onclick="generateNextFact()" title="Novo Fato" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition">
+              <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Avaliando Agora</span>
+            <div id="active-student-display" class="text-lg sm:text-xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
+              <span>Selecione um Estudante</span>
+            </div>
+          </div>
+
+          <div class="py-6 flex flex-col items-center">
+            <div id="fact-display" class="text-6xl sm:text-7xl font-black tracking-tight text-slate-900 select-none">
+              7 × 8
+            </div>
+            
+            <button onclick="toggleAnswer()" class="mt-4 text-xs font-semibold text-slate-400 hover:text-indigo-600 flex items-center gap-1">
+              <span id="answer-text" class="hidden font-bold text-emerald-600 text-sm bg-emerald-50 px-2 py-0.5 rounded-md">Resposta: 56</span>
+              <span id="toggle-answer-btn">👁️ Ver gabarito</span>
+            </button>
+          </div>
+
+          <div class="w-full grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-slate-100">
+            <button onclick="recordAttempt('acertou')" class="p-3 sm:p-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-xs transition active:scale-95">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span>Acertou</span>
+            </button>
+
+            <button onclick="recordAttempt('pensou_trocou_acertou')" class="p-3 sm:p-4 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-xs transition active:scale-95">
+              <i data-lucide="lightbulb" class="w-5 h-5"></i>
+              <span class="leading-tight text-center">Pensou, trocou e acertou</span>
+            </button>
+
+            <button onclick="recordAttempt('pensou_trocou_errou')" class="p-3 sm:p-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-xs transition active:scale-95">
+              <i data-lucide="help-circle" class="w-5 h-5"></i>
+              <span class="leading-tight text-center">Pensou, trocou e errou</span>
+            </button>
+
+            <button onclick="recordAttempt('errou')" class="p-3 sm:p-4 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-xs transition active:scale-95">
+              <i data-lucide="x-circle" class="w-5 h-5"></i>
+              <span>Errou</span>
+            </button>
+          </div>
+
+        </div>
+
+        <div class="lg:col-span-4 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Histórico do Estudante</h2>
+              <button onclick="clearCurrentStudentSession()" class="text-[11px] text-slate-400 hover:text-rose-500">Zerar histórico</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 my-4">
+              <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-2xl text-center">
+                <span class="text-[11px] font-bold text-emerald-700 block">Acertos</span>
+                <span id="count-acertos" class="text-xl font-black text-emerald-800">0</span>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-2xl text-center">
+                <span class="text-[11px] font-bold text-blue-700 block">Pensou/Acertou</span>
+                <span id="count-pensou-acertou" class="text-xl font-black text-blue-800">0</span>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-2xl text-center">
+                <span class="text-[11px] font-bold text-amber-700 block">Pensou/Errou</span>
+                <span id="count-pensou-errou" class="text-xl font-black text-amber-800">0</span>
+              </div>
+              <div class="bg-rose-50 border border-rose-100 p-2.5 rounded-2xl text-center">
+                <span class="text-[11px] font-bold text-rose-700 block">Erros diretos</span>
+                <span id="count-erros" class="text-xl font-black text-rose-800">0</span>
+              </div>
+            </div>
+
+            <span class="text-xs font-semibold text-slate-600 block mb-2">Últimas Respostas:</span>
+            <div id="recent-answers-list" class="space-y-1.5 max-h-44 overflow-y-auto custom-scroll pr-1 text-xs">
+              <p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex gap-2">
+            <button onclick="printStudentSheet(currentStudentId)" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i> Ficha
+            </button>
+            <button onclick="shareWhatsApp(currentStudentId)" class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Enviar
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="tab-turmas" class="hidden space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Adicionar Aluno(s)
+          </h2>
+          
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Turma</label>
+            <select id="input-class" onchange="handleClassSelectChange()" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none">
+              </select>
+            <input type="text" id="input-custom-class" placeholder="Digite o nome da nova turma..." class="hidden mt-2 w-full text-xs p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo</label>
+            <input type="text" id="input-name" placeholder="Ex: Gabriel Alves Ribeiro" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none">
+          </div>
+
+          <button onclick="addSingleStudent()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition">
+            Cadastrar Estudante
+          </button>
+
+          <hr class="border-slate-100">
+
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-600">Inserir Lista Completa (1 por linha)</label>
+            <textarea id="bulk-students" rows="4" placeholder="Ana Souza&#10;Bernardo Silva&#10;Carlos Eduardo" class="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"></textarea>
+            <button onclick="importBulkStudents()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+              Importar em Lote para a Turma
+            </button>
+          </div>
+        </div>
+
+        <div class="md:col-span-2 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700">Lista Geral de Estudantes</h2>
+            <button onclick="exportDataJSON()" class="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-semibold">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar Backup
+            </button>
+          </div>
+
+          <div class="overflow-x-auto max-h-96 custom-scroll">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] sticky top-0">
+                <tr>
+                  <th class="p-2.5 rounded-l-lg">Nome</th>
+                  <th class="p-2.5">Turma</th>
+                  <th class="p-2.5 text-center">Fatos Feitos</th>
+                  <th class="p-2.5 text-center">% Acertos</th>
+                  <th class="p-2.5 rounded-r-lg text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="tab-relatorios" class="hidden space-y-5">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Relatórios & Impressão para Pasta / Caderno</h2>
+          <p class="text-xs text-slate-500">Imprima a ficha individual para colar no caderno ou a ata geral da turma.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="printClassSummary()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Ata da Turma Selecionada
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="turmas-summary-cards"></div>
+    </section>
+
+  </main>
+
+  <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
+
+  <script>
+    const STORAGE_KEY = 'FATOS_EM_FOCO_DATA_V4';
+
+    const defaultState = {
+      classList: ['6º REG 1', '6º REG 2'],
+      selectedClass: '6º REG 1',
+      operationMode: 'all',
+      students: [
+        { id: '1', name: 'Alice Martins', class: '6º REG 1', records: [] },
+        { id: '2', name: 'Bernardo Costa', class: '6º REG 1', records: [] },
+        { id: '3', name: 'Cauã Rodrigues', class: '6º REG 1', records: [] },
+        { id: '4', name: 'Davi Fernandes', class: '6º REG 1', records: [] },
+        { id: '5', name: 'Eduarda Gomes', class: '6º REG 2', records: [] },
+        { id: '6', name: 'Felipe Henrique', class: '6º REG 2', records: [] },
+        { id: '7', name: 'Gabriela Lima', class: '6º REG 2', records: [] }
+      ]
+    };
+
+    let appState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState;
+    if (!appState.classList) appState.classList = ['6º REG 1', '6º REG 2'];
+    let currentStudentId = appState.students[0]?.id || null;
+    let currentFact = { text: '7 × 8', answer: 56, op: 'mult' };
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    }
+
+    // NAVEGAÇÃO DE ABAS
+    function switchTab(tabId) {
+      ['afericao', 'turmas', 'relatorios'].forEach(id => {
+        document.getElementById(`tab-${id}`).classList.toggle('hidden', id !== tabId);
+        const btn = document.getElementById(`tab-btn-${id}`);
+        if (id === tabId) {
+          btn.className = "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-white text-indigo-600 shadow-xs font-bold";
+        } else {
+          btn.className = "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
+        }
+      });
+      if (tabId === 'turmas') {
+        populateClassDropdown();
+        renderStudentsTable();
+      }
+      if (tabId === 'relatorios') renderClassSummaryCards();
+      lucide.createIcons();
+    }
+
+    // RENDERIZAR BOTÕES DE TURMA (ESTILO PILL)
+    function renderClassPills() {
+      const container = document.getElementById('class-pills');
+      container.innerHTML = '';
+
+      appState.classList.forEach(className => {
+        const isSelected = appState.selectedClass === className;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectClassFilter(className);
+        btn.dataset.class = className;
+        btn.className = isSelected 
+          ? "class-pill px-3 py-1 rounded-lg font-bold bg-white text-indigo-600 shadow-xs transition" 
+          : "class-pill px-3 py-1 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition";
+        btn.innerText = className;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectClassFilter(className) {
+      appState.selectedClass = className;
+      renderClassPills();
+      renderStudentChips();
+      
+      const firstInClass = appState.students.find(s => s.class === className);
+      if (firstInClass) {
+        selectStudent(firstInClass.id);
+      } else {
+        currentStudentId = null;
+        updateActiveStudentHeader();
+        updateSessionMetrics();
+      }
+      saveData();
+    }
+
+    // RENDERIZAR ESTUDANTES EM GRADE/LINHAS (MOSAICO COMPACTO)
+    function renderStudentChips(filterQuery = '') {
+      const container = document.getElementById('student-chips-container');
+      const totalLabel = document.getElementById('student-total-label');
+      container.innerHTML = '';
+
+      const filtered = appState.students.filter(s => 
+        s.class === appState.selectedClass && 
+        s.name.toLowerCase().includes(filterQuery.toLowerCase())
+      );
+
+      totalLabel.innerText = `${filtered.length} alunos`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400 py-1">Nenhum estudante encontrado nesta turma.</span>';
+        return;
+      }
+
+      filtered.forEach(student => {
+        const isSelected = student.id === currentStudentId;
+        const count = student.records.length;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectStudent(student.id);
+        btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
+          isSelected 
+            ? 'bg-indigo-600 text-white shadow-xs' 
+            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs'
+        }`;
+        btn.innerHTML = `
+          <span>${student.name}</span>
+          <span class="px-1.5 py-0.2 text-[10px] rounded-full ${isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-100 text-slate-600'}">${count}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function filterStudentChips() {
+      const q = document.getElementById('student-search').value;
+      renderStudentChips(q);
+    }
+
+    function selectStudent(id) {
+      currentStudentId = id;
+      renderStudentChips(document.getElementById('student-search').value);
+      updateActiveStudentHeader();
+      updateSessionMetrics();
+    }
+
+    function pickRandomStudent() {
+      const turmaStudents = appState.students.filter(s => s.class === appState.selectedClass);
+      if (turmaStudents.length === 0) return;
+      const random = turmaStudents[Math.floor(Math.random() * turmaStudents.length)];
+      selectStudent(random.id);
+    }
+
+    function updateActiveStudentHeader() {
+      const student = appState.students.find(s => s.id === currentStudentId);
+      const display = document.getElementById('active-student-display');
+      if (student) {
+        display.innerHTML = `
+          <span class="text-indigo-600">${student.name}</span>
+          <span class="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">${student.class}</span>
+        `;
+      } else {
+        display.innerHTML = '<span class="text-slate-400">Nenhum estudante selecionado</span>';
+      }
+    }
+
+    // OPERAÇÕES E GERAÇÃO DE FATOS
+    function setOperation(op) {
+      appState.operationMode = op;
+      ['all', 'mult', 'div'].forEach(mode => {
+        const btn = document.getElementById(`op-btn-${mode}`);
+        if (mode === op) {
+          btn.className = "px-3 py-1 rounded-lg bg-white text-indigo-600 font-bold shadow-xs";
+        } else {
+          btn.className = "px-3 py-1 rounded-lg text-slate-600 font-medium";
+        }
+      });
+      generateNextFact();
+    }
+
+    function generateNextFact() {
+      let isMult = true;
+      if (appState.operationMode === 'mult') isMult = true;
+      else if (appState.operationMode === 'div') isMult = false;
+      else isMult = Math.random() > 0.5;
+
+      const a = Math.floor(Math.random() * 9) + 2; // 2 a 10
+      const b = Math.floor(Math.random() * 9) + 2; // 2 a 10
+
+      if (isMult) {
+        currentFact = {
+          text: `${a} × ${b}`,
+          answer: a * b,
+          op: 'mult'
+        };
+      } else {
+        const product = a * b;
+        currentFact = {
+          text: `${product} ÷ ${a}`,
+          answer: b,
+          op: 'div'
+        };
+      }
+
+      document.getElementById('fact-display').innerText = currentFact.text;
+      document.getElementById('answer-text').innerText = `Resposta: ${currentFact.answer}`;
+      document.getElementById('answer-text').classList.add('hidden');
+      document.getElementById('toggle-answer-btn').innerText = '👁️ Ver gabarito';
+    }
+
+    function toggleAnswer() {
+      const el = document.getElementById('answer-text');
+      const btn = document.getElementById('toggle-answer-btn');
+      const isHidden = el.classList.contains('hidden');
+      el.classList.toggle('hidden');
+      btn.innerText = isHidden ? '🙈 Ocultar' : '👁️ Ver gabarito';
+    }
+
+    // REGISTRO DE RESPOSTAS
+    function recordAttempt(status) {
+      if (!currentStudentId) {
+        alert('Por favor, selecione um estudante antes de registrar.');
+        return;
+      }
+
+      const student = appState.students.find(s => s.id === currentStudentId);
+      if (!student) return;
+
+      const record = {
+        id: Date.now(),
+        fact: currentFact.text,
+        status: status,
+        date: new Date().toISOString()
+      };
+
+      student.records.unshift(record);
+      saveData();
+      updateSessionMetrics();
+      renderStudentChips(document.getElementById('student-search').value);
+      generateNextFact();
+    }
+
+    function updateSessionMetrics() {
+      const student = appState.students.find(s => s.id === currentStudentId);
+      const list = document.getElementById('recent-answers-list');
+      
+      let acertou = 0;
+      let pensouAcertou = 0;
+      let pensouErrou = 0;
+      let errou = 0;
+
+      if (!student || student.records.length === 0) {
+        document.getElementById('count-acertos').innerText = '0';
+        document.getElementById('count-pensou-acertou').innerText = '0';
+        document.getElementById('count-pensou-errou').innerText = '0';
+        document.getElementById('count-erros').innerText = '0';
+        list.innerHTML = '<p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      student.records.forEach(r => {
+        if (r.status === 'acertou') acertou++;
+        if (r.status === 'pensou_trocou_acertou') pensouAcertou++;
+        if (r.status === 'pensou_trocou_errou') pensouErrou++;
+        if (r.status === 'errou') errou++;
+      });
+
+      document.getElementById('count-acertos').innerText = acertou;
+      document.getElementById('count-pensou-acertou').innerText = pensouAcertou;
+      document.getElementById('count-pensou-errou').innerText = pensouErrou;
+      document.getElementById('count-erros').innerText = errou;
+
+      student.records.slice(0, 5).forEach(r => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs";
+        
+        let label = '';
+        let color = '';
+        if (r.status === 'acertou') { label = 'Acertou'; color = 'text-emerald-700 bg-emerald-100'; }
+        if (r.status === 'pensou_trocou_acertou') { label = 'Pensou/Acertou'; color = 'text-blue-700 bg-blue-100'; }
+        if (r.status === 'pensou_trocou_errou') { label = 'Pensou/Errou'; color = 'text-amber-700 bg-amber-100'; }
+        if (r.status === 'errou') { label = 'Errou'; color = 'text-rose-700 bg-rose-100'; }
+
+        item.innerHTML = `
+          <span class="font-bold text-slate-800">${r.fact}</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${color}">${label}</span>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function clearCurrentStudentSession() {
+      const student = appState.students.find(s => s.id === currentStudentId);
+      if (!student) return;
+      if (confirm(`Limpar todos os registros de ${student.name}?`)) {
+        student.records = [];
+        saveData();
+        updateSessionMetrics();
+        renderStudentChips();
+      }
+    }
+
+    // CADASTRO DE ESTUDANTES E GESTÃO DE TURMAS
+    function populateClassDropdown() {
+      const select = document.getElementById('input-class');
+      select.innerHTML = '';
+
+      appState.classList.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c;
+        select.appendChild(opt);
+      });
+
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom__';
+      customOpt.innerText = '➕ Outra (digitar nova turma...)';
+      select.appendChild(customOpt);
+    }
+
+    function handleClassSelectChange() {
+      const select = document.getElementById('input-class');
+      const customInput = document.getElementById('input-custom-class');
+      if (select.value === '__custom__') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+    }
+
+    function getTargetClass() {
+      const select = document.getElementById('input-class');
+      let target = select.value;
+      if (target === '__custom__') {
+        target = document.getElementById('input-custom-class').value.trim();
+        if (!target) {
+          alert('Por favor, digite o nome da nova turma.');
+          return null;
+        }
+        if (!appState.classList.includes(target)) {
+          appState.classList.push(target);
+          renderClassPills();
+        }
+      }
+      return target;
+    }
+
+    function addSingleStudent() {
+      const name = document.getElementById('input-name').value.trim();
+      const turma = getTargetClass();
+      if (!turma) return;
+      if (!name) return alert('Digite o nome do estudante.');
+
+      appState.students.push({
+        id: Date.now().toString(),
+        name: name,
+        class: turma,
+        records: []
+      });
+
+      document.getElementById('input-name').value = '';
+      saveData();
+      renderStudentsTable();
+      renderClassPills();
+      renderStudentChips();
+      populateClassDropdown();
+      alert(`Estudante cadastrado com sucesso na turma ${turma}!`);
+    }
+
+    function importBulkStudents() {
+      const text = document.getElementById('bulk-students').value.trim();
+      const turma = getTargetClass();
+      if (!turma) return;
+      if (!text) return alert('Cole ao menos um nome na lista.');
+
+      const names = text.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+      names.forEach((name, idx) => {
+        appState.students.push({
+          id: (Date.now() + idx).toString(),
+          name: name,
+          class: turma,
+          records: []
+        });
+      });
+
+      document.getElementById('bulk-students').value = '';
+      saveData();
+      renderStudentsTable();
+      renderClassPills();
+      renderStudentChips();
+      populateClassDropdown();
+      alert(`${names.length} estudantes importados com sucesso para ${turma}!`);
+    }
+
+    function deleteStudent(id) {
+      const student = appState.students.find(s => s.id === id);
+      if (confirm(`Excluir o estudante ${student.name}?`)) {
+        appState.students = appState.students.filter(s => s.id !== id);
+        if (currentStudentId === id) {
+          currentStudentId = appState.students[0]?.id || null;
+        }
+        saveData();
+        renderStudentsTable();
+        renderStudentChips();
+      }
+    }
+
+    function renderStudentsTable() {
+      const tbody = document.getElementById('students-table-body');
+      tbody.innerHTML = '';
+
+      appState.students.forEach(s => {
+        const total = s.records.length;
+        const acertos = s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length;
+        const perc = total > 0 ? Math.round((acertos / total) * 100) : 0;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${s.name}</td>
+          <td class="p-2.5 text-slate-500 font-semibold">${s.class}</td>
+          <td class="p-2.5 text-center font-semibold">${total}</td>
+          <td class="p-2.5 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${perc >= 70 ? 'bg-emerald-100 text-emerald-800' : perc >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}">
+              ${perc}%
+            </span>
+          </td>
+          <td class="p-2.5 text-right space-x-1">
+            <button onclick="printStudentSheet('${s.id}')" title="Imprimir" class="p-1 text-slate-500 hover:text-indigo-600"><i data-lucide="printer" class="w-3.5 h-3.5"></i></button>
+            <button onclick="shareWhatsApp('${s.id}')" title="WhatsApp" class="p-1 text-slate-500 hover:text-emerald-600"><i data-lucide="send" class="w-3.5 h-3.5"></i></button>
+            <button onclick="deleteStudent('${s.id}')" title="Excluir" class="p-1 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    // RELATÓRIOS
+    function renderClassSummaryCards() {
+      const container = document.getElementById('turmas-summary-cards');
+      container.innerHTML = '';
+
+      appState.classList.forEach(turma => {
+        const students = appState.students.filter(s => s.class === turma);
+        const totalAlunos = students.length;
+        let totalFatos = 0;
+        let totalAcertos = 0;
+
+        students.forEach(s => {
+          totalFatos += s.records.length;
+          totalAcertos += s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length;
+        });
+
+        const aproveitamento = totalFatos > 0 ? Math.round((totalAcertos / totalFatos) * 100) : 0;
+
+        const card = document.createElement('div');
+        card.className = "bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-slate-800">${turma}</h3>
+            <span class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold">${totalAlunos} Alunos</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="bg-slate-50 p-2.5 rounded-2xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Fatos Aferidos</span>
+              <span class="text-lg font-black text-slate-800">${totalFatos}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-2xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Aproveitamento</span>
+              <span class="text-lg font-black text-emerald-600">${aproveitamento}%</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // EXPORTAR DADOS EM JSON
+    function exportDataJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `maratona_fatos_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // ENVIAR POR WHATSAPP
+    function shareWhatsApp(studentId) {
+      const student = appState.students.find(s => s.id === studentId);
+      if (!student) return;
+
+      const total = student.records.length;
+      const acertos = student.records.filter(r => r.status === 'acertou').length;
+      const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
+      const pensouErrou = student.records.filter(r => r.status === 'pensou_trocou_errou').length;
+      const errou = student.records.filter(r => r.status === 'errou').length;
+
+      const mensagem = `*PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO*\n` +
+        `*Professora Erlaine - EEMA Carbonita-MG*\n\n` +
+        `👤 *Estudante:* ${student.name}\n` +
+        `🏫 *Turma:* ${student.class}\n` +
+        `🎯 *Total de fatos aferidos:* ${total}\n\n` +
+        `✅ Acertou direto: ${acertos}\n` +
+        `💡 Pensou, trocou e acertou: ${pensouAcertou}\n` +
+        `🤔 Pensou, trocou e errou: ${pensouErrou}\n` +
+        `❌ Errou: ${errou}\n\n` +
+        `_Parabéns pelo esforço e dedicação na matemática!_`;
+
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+    }
+
+    // IMPRESSÃO INDIVIDUAL DA FICHA
+    function printStudentSheet(studentId) {
+      const student = appState.students.find(s => s.id === studentId);
+      if (!student) return;
+
+      const total = student.records.length;
+      const acertos = student.records.filter(r => r.status === 'acertou').length;
+      const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
+      const pensouErrou = student.records.filter(r => r.status === 'pensou_trocou_errou').length;
+      const errou = student.records.filter(r => r.status === 'errou').length;
+
+      const printArea = document.getElementById('print-area');
+      printArea.innerHTML = `
+        <div style="border: 2px solid #0f172a; border-radius: 12px; padding: 18px; max-width: 650px; margin: 0 auto; font-family: sans-serif;">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="logo.png" style="height: 55px; width: auto;" alt="Logo EEMA" />
+              <div>
+                <p style="font-size: 10px; font-weight: bold; margin: 0; color: #475569;">ESCOLA ESTADUAL MESTRA AURORA - CARBONITA / MG</p>
+                <h2 style="font-size: 14px; font-weight: 800; margin: 2px 0;">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h2>
+                <p style="font-size: 11px; margin: 0; color: #334155;">Professora Erlaine • Ficha Individual de Aferição</p>
+              </div>
+            </div>
+            <div style="text-align: right; font-size: 10px; color: #64748b;">
+              Data: ${new Date().toLocaleDateString('pt-BR')}
+            </div>
+          </div>
+
+          <div style="margin: 14px 0; background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px;">
+            <p style="margin: 3px 0;"><strong>Estudante:</strong> ${student.name}</p>
+            <p style="margin: 3px 0;"><strong>Turma:</strong> ${student.class}</p>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin: 12px 0;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 6px; border: 1px solid #cbd5e1;">Critério Observado</th>
+                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">Quantidade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #cbd5e1;">✅ Acertou com rapidez e clareza</td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${acertos}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #cbd5e1;">💡 Pensou, trocou e acertou</td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${pensouAcertou}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #cbd5e1;">🤔 Pensou, trocou e errou</td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${pensouErrou}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #cbd5e1;">❌ Errou</td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${errou}</td>
+              </tr>
+              <tr style="background: #f8fafc; font-weight: bold;">
+                <td style="padding: 6px; border: 1px solid #cbd5e1;">Total de fatos aferidos</td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">${total}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top: 30px; display: flex; justify-content: space-around; text-align: center; font-size: 10px;">
+            <div style="width: 200px; border-top: 1px solid #94a3b8; padding-top: 4px;">
+              Professora Erlaine
+            </div>
+            <div style="width: 200px; border-top: 1px solid #94a3b8; padding-top: 4px;">
+              Assinatura do Responsável
+            </div>
+          </div>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    // IMPRESSÃO DE ATA GERAL DA TURMA ATIVA
+    function printClassSummary() {
+      const turma = appState.selectedClass;
+      const students = appState.students.filter(s => s.class === turma);
+
+      const rows = students.map((s, i) => {
+        const total = s.records.length;
+        const acertos = s.records.filter(r => r.status === 'acertou').length;
+        const pensouAcertou = s.records.filter(r => r.status === 'pensou_trocou_acertou').length;
+        const pensouErrou = s.records.filter(r => r.status === 'pensou_trocou_errou').length;
+        const errou = s.records.filter(r => r.status === 'errou').length;
+        return `
+          <tr>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center;">${i + 1}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; font-weight: 600;">${s.name}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center;">${acertos}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center;">${pensouAcertou}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center;">${pensouErrou}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center;">${errou}</td>
+            <td style="padding: 5px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${total}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const printArea = document.getElementById('print-area');
+      printArea.innerHTML = `
+        <div style="font-family: sans-serif; padding: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="logo.png" style="height: 50px; width: auto;" alt="Logo EEMA" />
+              <div>
+                <h2 style="margin: 0; font-size: 15px;">ESCOLA ESTADUAL MESTRA AURORA - CARBONITA / MG</h2>
+                <h3 style="margin: 2px 0; font-size: 12px;">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h3>
+                <p style="margin: 0; font-size: 11px; color: #475569;">Professora Erlaine • Mapa Geral da Turma: <strong>${turma}</strong></p>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: #64748b;">
+              Data: ${new Date().toLocaleDateString('pt-BR')}
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: center;">
+                <th style="padding: 5px; border: 1px solid #cbd5e1; width: 30px;">#</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1; text-align: left;">Nome do Estudante</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1;">Acertou</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1;">Pensou/Acertou</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1;">Pensou/Errou</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1;">Errou</th>
+                <th style="padding: 5px; border: 1px solid #cbd5e1;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    // INICIALIZAÇÃO
+    window.addEventListener('DOMContentLoaded', () => {
+      renderClassPills();
+      renderStudentChips();
+      updateActiveStudentHeader();
+      updateSessionMetrics();
+      generateNextFact();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
