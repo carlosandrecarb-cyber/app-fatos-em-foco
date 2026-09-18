@@ -49,7 +49,7 @@
       
       <div class="flex items-center gap-3">
         <div class="h-14 flex items-center justify-center shrink-0">
-          <img src="LOGO MESTRA AURORA.png" alt="Logo Escola Estadual Mestra Aurora" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
+          <img src="logo.png" alt="Logo Escola Estadual Mestra Aurora" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
           <span id="fallback-logo-text" class="hidden text-xs font-bold text-slate-700 border border-slate-300 rounded-xl p-1 bg-slate-50 text-center">EEMA</span>
         </div>
         <div>
@@ -447,7 +447,6 @@
         const count = student.records.length;
         
         let colorClass = isSelected ? 'bg-indigo-600 text-white shadow-xs border-transparent' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs';
-        // Fica verde na listagem se já completou os 10 fatos
         if(count >= 10 && !isSelected) {
             colorClass = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200';
         }
@@ -488,10 +487,9 @@
       const turmaStudents = appState.students.filter(s => s.class === appState.selectedClass);
       if (turmaStudents.length === 0) return;
       
-      // Tenta sortear apenas quem ainda não completou os 10 fatos
       let validStudents = turmaStudents.filter(s => s.records.length < 10);
       if(validStudents.length === 0) {
-          validStudents = turmaStudents; // Se todos completaram, sorteia qualquer um
+          validStudents = turmaStudents; 
       }
       
       const random = validStudents[Math.floor(Math.random() * validStudents.length)];
@@ -531,7 +529,6 @@
       progressBadge.classList.remove('hidden');
       
       if (student.records.length >= 10) {
-        // TELA DE CONCLUÍDO
         assessmentArea.classList.add('hidden');
         completedArea.classList.remove('hidden');
         completedArea.classList.add('flex');
@@ -543,7 +540,6 @@
         timerDisplay.classList.add('opacity-0');
         
       } else {
-        // TELA ATIVA
         assessmentArea.classList.remove('hidden');
         completedArea.classList.add('hidden');
         completedArea.classList.remove('flex');
@@ -601,7 +597,7 @@
     function generateNextFact() {
       const student = appState.students.find(s => s.id === currentStudentId);
       if (!student || student.records.length >= 10) {
-        return; // Não gera se já terminou os 10
+        return; 
       }
 
       let isMult = true;
@@ -609,8 +605,8 @@
       else if (appState.operationMode === 'div') isMult = false;
       else isMult = Math.random() > 0.5;
 
-      const a = Math.floor(Math.random() * 9) + 2; // 2 a 10
-      const b = Math.floor(Math.random() * 9) + 2; // 2 a 10
+      const a = Math.floor(Math.random() * 9) + 2; 
+      const b = Math.floor(Math.random() * 9) + 2; 
 
       if (isMult) {
         currentFact = { text: `${a} × ${b}`, answer: a * b, op: 'mult' };
@@ -636,7 +632,7 @@
       if (!student) return;
 
       if (student.records.length >= 10) {
-        return; // Limite de 10 atingido
+        return; 
       }
 
       const record = {
@@ -646,7 +642,6 @@
         date: new Date().toISOString()
       };
 
-      // Insere no início para aparecer primeiro no histórico
       student.records.unshift(record);
       saveData();
       
@@ -694,7 +689,7 @@
         if (r.status === 'pensou_trocou_errou') { label = 'Pensou/Errou'; color = 'text-amber-700 bg-amber-100'; }
         if (r.status === 'errou') { label = 'Errou'; color = 'text-rose-700 bg-rose-100'; }
 
-        const inverseIndex = student.records.length - index; // Fato 10, Fato 9, etc...
+        const inverseIndex = student.records.length - index; 
         item.innerHTML = `
           <div class="flex items-center gap-2">
             <span class="text-[9px] font-bold text-slate-400 w-4">${inverseIndex}º</span>
@@ -955,7 +950,7 @@
         <div style="border: 2px solid #0f172a; border-radius: 12px; padding: 18px; max-width: 650px; margin: 0 auto; font-family: sans-serif;">
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <img src="LOGO MESTRA AURORA.png" style="height: 55px; width: auto;" alt="Logo EEMA" />
+              <img src="logo.png" style="height: 55px; width: auto;" alt="Logo EEMA" />
               <div>
                 <p style="font-size: 10px; font-weight: bold; margin: 0; color: #475569;">ESCOLA ESTADUAL MESTRA AURORA - CARBONITA / MG</p>
                 <h2 style="font-size: 14px; font-weight: 800; margin: 2px 0;">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h2>
@@ -1046,7 +1041,7 @@
         <div style="font-family: sans-serif; padding: 10px;">
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <img src="LOGO MESTRA AURORA.png" style="height: 50px; width: auto;" alt="Logo EEMA" />
+              <img src="logo.png" style="height: 50px; width: auto;" alt="Logo EEMA" />
               <div>
                 <h2 style="margin: 0; font-size: 15px;">ESCOLA ESTADUAL MESTRA AURORA - CARBONITA / MG</h2>
                 <h3 style="margin: 2px 0; font-size: 12px;">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h3>
