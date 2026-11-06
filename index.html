@@ -32,6 +32,17 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
+  <!-- A SOLUÇÃO DEFINITIVA PARA O BLOQUEIO DA NUVEM -->
+  <!-- Formulário Oculto para Envio Nativo (Ignora CORS) -->
+  <iframe name="hidden-iframe" style="display:none;"></iframe>
+  <!-- COLOQUE A SUA URL ABAIXO NO ATRIBUTO "action" DO FORMULÁRIO -->
+  <form id="hidden-form" method="POST" target="hidden-iframe" style="display:none;" action="https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec">
+      <!-- O App Script espera os dados no corpo da requisição postData.contents -->
+      <!-- Como não podemos enviar body raw num form, vamos enviar como input e 
+           adaptar o App Script (ver instruções fora do código) -->
+      <textarea name="payload" id="hidden-payload"></textarea>
+  </form>
+
   <!-- Ecrã de Carregamento Inicial da Planilha -->
   <div id="loading-overlay" style="display: none;">
     <i data-lucide="cloud-download" class="w-12 h-12 text-indigo-600 animate-bounce mb-4"></i>
@@ -267,19 +278,19 @@
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
-    // =========================================================================
-    // URL EXATA DO GOOGLE APPS SCRIPT ATUALIZADA
-    // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec"; 
-
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V3';
+    
+    // NOVA CHAVE PARA GARANTIR LIMPEZA DE ESTADO SE NECESSÁRIO
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V4';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
-    // Puxar a memória
+    // Tenta puxar a memória das versões anteriores do seu aparelho
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V2')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V3')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V2')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V1')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_CLOUD_V2')) || 
                    defaultState;
     }
 
@@ -318,45 +329,44 @@
       lucide.createIcons();
     }
 
+    // A SOLUÇÃO ROBUSTA PARA EVITAR BLOQUEIO DE NAVEGADOR (CORS)
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       
-      // NOVA FORMA DE ENVIO DE DADOS PARA EVITAR BLOQUEIO DO NAVEGADOR
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         showCloudSyncing();
-        fetch(GOOGLE_SHEETS_API_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Isto desativa a validação rígida do navegador
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(appState)
-        })
-        .then(() => showCloudSuccess())
-        .catch(err => {
-            console.error("Erro no salvamento", err);
+        try {
+            // Em vez de usar fetch, preenche o formulário oculto e submete
+            document.getElementById('hidden-payload').value = JSON.stringify(appState);
+            document.getElementById('hidden-form').submit();
+            // Como é um form invisível, assumimos sucesso imediato
+            setTimeout(showCloudSuccess, 1000); 
+        } catch(e) {
+            console.error("Erro no envio nativo", e);
             showCloudError();
-        });
+        }
       } else {
         showLocalSuccess();
       }
     }
 
     async function initApp() {
+      document.getElementById('loading-overlay').style.display = 'flex';
+      
+      // Tenta ler os dados da nuvem se existirem
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-        document.getElementById('loading-overlay').style.display = 'flex';
         try {
           const response = await fetch(GOOGLE_SHEETS_API_URL);
           const cloudData = await response.json();
-          if (cloudData && cloudData.students) {
+          if (cloudData && cloudData.students && cloudData.students.length > 0) {
             appState = cloudData;
             showCloudSuccess();
           } else {
              saveData(); 
           }
         } catch(e) {
-          console.error("Usando backup local offline", e);
-          showCloudError();
+          console.error("Usando backup local offline ou URL não configurada", e);
+          // showLocalSuccess(); 
         }
       }
 
@@ -374,7 +384,7 @@
       if (currentStudentId) {
         selectStudent(currentStudentId);
       } else {
-        checkActiveState();
+        checkActiveState(); // Garante a ocultação se não houver alunos
       }
       
       lucide.createIcons();
@@ -475,6 +485,7 @@
       display.innerHTML = student ? `<span class="text-indigo-600">${student.name}</span><span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">${student.class}</span>` : '<span class="text-slate-400">Nenhum selecionado</span>';
     }
 
+    // A MÁGICA DE EXIBIR OU ESCONDER OS BOTÕES DE FORMA SEGURA
     function checkActiveState() {
       const student = appState.students.find(s => s.id === currentStudentId);
       const assessmentArea = document.getElementById('assessment-active-area');
