@@ -32,18 +32,7 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-  <!-- A SOLUÇÃO DEFINITIVA PARA O BLOQUEIO DA NUVEM -->
-  <!-- Formulário Oculto para Envio Nativo (Ignora CORS) -->
-  <iframe name="hidden-iframe" style="display:none;"></iframe>
-  <!-- COLOQUE A SUA URL ABAIXO NO ATRIBUTO "action" DO FORMULÁRIO -->
-  <form id="hidden-form" method="POST" target="hidden-iframe" style="display:none;" action="https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec">
-      <!-- O App Script espera os dados no corpo da requisição postData.contents -->
-      <!-- Como não podemos enviar body raw num form, vamos enviar como input e 
-           adaptar o App Script (ver instruções fora do código) -->
-      <textarea name="payload" id="hidden-payload"></textarea>
-  </form>
-
-  <!-- Ecrã de Carregamento Inicial da Planilha -->
+  <!-- Ecrã de Carregamento Inicial -->
   <div id="loading-overlay" style="display: none;">
     <i data-lucide="cloud-download" class="w-12 h-12 text-indigo-600 animate-bounce mb-4"></i>
     <h2 class="text-xl font-bold text-slate-800">A conectar ao Banco de Dados...</h2>
@@ -278,19 +267,21 @@
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
+    // =========================================================================
+    // URL EXATA DO GOOGLE APPS SCRIPT ATUALIZADA
+    // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec"; 
-    
-    // NOVA CHAVE PARA GARANTIR LIMPEZA DE ESTADO SE NECESSÁRIO
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V4';
+
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V6';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
     // Tenta puxar a memória das versões anteriores do seu aparelho
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V3')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V4')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V3')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V2')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V1')) || 
-                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_CLOUD_V2')) || 
                    defaultState;
     }
 
@@ -329,44 +320,49 @@
       lucide.createIcons();
     }
 
-    // A SOLUÇÃO ROBUSTA PARA EVITAR BLOQUEIO DE NAVEGADOR (CORS)
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         showCloudSyncing();
-        try {
-            // Em vez de usar fetch, preenche o formulário oculto e submete
-            document.getElementById('hidden-payload').value = JSON.stringify(appState);
-            document.getElementById('hidden-form').submit();
-            // Como é um form invisível, assumimos sucesso imediato
-            setTimeout(showCloudSuccess, 1000); 
-        } catch(e) {
-            console.error("Erro no envio nativo", e);
+        fetch(GOOGLE_SHEETS_API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(appState)
+        })
+        .then(() => showCloudSuccess())
+        .catch(err => {
+            console.error("Erro no salvamento", err);
             showCloudError();
-        }
+        });
       } else {
         showLocalSuccess();
       }
     }
 
     async function initApp() {
-      document.getElementById('loading-overlay').style.display = 'flex';
-      
-      // Tenta ler os dados da nuvem se existirem
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
+        document.getElementById('loading-overlay').style.display = 'flex';
         try {
           const response = await fetch(GOOGLE_SHEETS_API_URL);
-          const cloudData = await response.json();
-          if (cloudData && cloudData.students && cloudData.students.length > 0) {
-            appState = cloudData;
-            showCloudSuccess();
+          const textResponse = await response.text();
+          if (textResponse && textResponse !== "null") {
+              const cloudData = JSON.parse(textResponse);
+              if (cloudData && cloudData.students && cloudData.students.length > 0) {
+                  appState = cloudData;
+                  showCloudSuccess();
+              } else {
+                  saveData();
+              }
           } else {
              saveData(); 
           }
         } catch(e) {
-          console.error("Usando backup local offline ou URL não configurada", e);
-          // showLocalSuccess(); 
+          console.error("Usando backup local", e);
+          showCloudError();
         }
       }
 
@@ -379,12 +375,12 @@
       renderClassPills();
       renderStudentChips();
       updateActiveStudentHeader();
-      updateSessionMetrics();
       
       if (currentStudentId) {
         selectStudent(currentStudentId);
       } else {
-        checkActiveState(); // Garante a ocultação se não houver alunos
+        updateSessionMetrics(); // Atualiza a zerar
+        checkActiveState(); // Oculta a área
       }
       
       lucide.createIcons();
@@ -547,22 +543,38 @@
       generateNextFact();
     }
 
+    // CORREÇÃO DO BUG QUE CAUSAVA A TELA AZUL SILENCIOSA
     function updateSessionMetrics() {
       const student = appState.students.find(s => s.id === currentStudentId);
       const list = document.getElementById('recent-answers-list');
-      let stats = { acertou: 0, pensou_trocou_acertou: 0, pensou_trocou_errou: 0, errou: 0 };
+      
+      let acertou = 0, pensouAcertou = 0, pensouErrou = 0, errou = 0;
+
       if (!student || student.records.length === 0) {
-        Object.keys(stats).forEach(k => document.getElementById(`count-${k.replace(/_/g, '-')}`).innerText = '0');
-        return list.innerHTML = '<p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>';
+        document.getElementById('count-acertos').innerText = '0';
+        document.getElementById('count-pensou-acertou').innerText = '0';
+        document.getElementById('count-pensou-errou').innerText = '0';
+        document.getElementById('count-erros').innerText = '0';
+        list.innerHTML = '<p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>';
+        return;
       }
+      
       list.innerHTML = '';
       student.records.forEach((r, i) => {
-        stats[r.status]++;
+        if (r.status === 'acertou') acertou++;
+        if (r.status === 'pensou_trocou_acertou') pensouAcertou++;
+        if (r.status === 'pensou_trocou_errou') pensouErrou++;
+        if (r.status === 'errou') errou++;
+        
         const colors = { acertou: 'text-emerald-700 bg-emerald-100', pensou_trocou_acertou: 'text-blue-700 bg-blue-100', pensou_trocou_errou: 'text-amber-700 bg-amber-100', errou: 'text-rose-700 bg-rose-100' };
         const labels = { acertou: 'Acertou', pensou_trocou_acertou: 'Pensou/Acertou', pensou_trocou_errou: 'Pensou/Errou', errou: 'Errou' };
         list.innerHTML += `<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs mb-1.5"><div class="flex items-center gap-2"><span class="text-[9px] font-bold text-slate-400 w-4">${student.records.length - i}º</span><span class="font-bold text-slate-800 text-sm">${r.fact}</span></div><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[r.status]}">${labels[r.status]}</span></div>`;
       });
-      Object.keys(stats).forEach(k => document.getElementById(`count-${k.replace(/_/g, '-')}`).innerText = stats[k]);
+      
+      document.getElementById('count-acertos').innerText = acertou;
+      document.getElementById('count-pensou-acertou').innerText = pensouAcertou;
+      document.getElementById('count-pensou-errou').innerText = pensouErrou;
+      document.getElementById('count-erros').innerText = errou;
     }
 
     function clearCurrentStudentSession() {
