@@ -131,7 +131,8 @@
             <div id="fact-progress-badge" class="mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full hidden shadow-sm">Iniciando...</div>
           </div>
 
-          <div id="assessment-active-area" class="w-full flex flex-col items-center hidden">
+          <!-- ÁREA ATIVA DA PERGUNTA -->
+          <div id="assessment-active-area" class="w-full flex-col items-center hidden">
             <div class="py-2 flex flex-col items-center relative w-full">
               <button onclick="generateNextFact()" title="Pular este fato" class="absolute right-0 top-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition flex flex-col items-center">
                 <i data-lucide="skip-forward" class="w-5 h-5"></i><span class="text-[9px] font-bold mt-1 uppercase">Pular</span>
@@ -431,19 +432,28 @@
       display.innerHTML = student ? `<span class="text-indigo-600">${student.name}</span><span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">${student.class}</span>` : '<span class="text-slate-400">Nenhum selecionado</span>';
     }
 
+    // CORREÇÃO: Garante que o bloco flex seja mostrado quando há aluno selecionado
     function checkActiveState() {
       const student = appState.students.find(s => s.id === currentStudentId);
+      const assessmentArea = document.getElementById('assessment-active-area');
+      const progressBadge = document.getElementById('fact-progress-badge');
+      const timerDisplay = document.getElementById('timer-display');
+
       if (!student) {
-        document.getElementById('assessment-active-area').classList.add('hidden');
-        document.getElementById('fact-progress-badge').classList.add('hidden');
-        document.getElementById('timer-display').classList.add('opacity-0');
-        return clearInterval(timerInterval);
+        assessmentArea.classList.add('hidden');
+        assessmentArea.classList.remove('flex'); // Remove o flex se oculto
+        progressBadge.classList.add('hidden');
+        timerDisplay.classList.add('opacity-0');
+        clearInterval(timerInterval);
+        return;
       }
-      document.getElementById('assessment-active-area').classList.remove('hidden');
-      const badge = document.getElementById('fact-progress-badge');
-      badge.classList.remove('hidden'); badge.innerText = `Fato ${student.records.length + 1}`;
-      badge.className = "mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full shadow-sm";
-      document.getElementById('timer-display').classList.remove('opacity-0');
+
+      assessmentArea.classList.remove('hidden');
+      assessmentArea.classList.add('flex'); // Garante que o flex seja ativado
+      progressBadge.classList.remove('hidden');
+      progressBadge.innerText = `Fato ${student.records.length + 1}`;
+      progressBadge.className = "mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full shadow-sm";
+      timerDisplay.classList.remove('opacity-0');
     }
 
     function setOperation(op) {
@@ -587,9 +597,6 @@
       if (student) window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`*PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO*\n*Professora Erlaine - EEMA Carbonita-MG*\n\nOlá família! Segue o desempenho:\n👤 *Estudante:* ${student.name}\n🏫 *Turma:* ${student.class}\n🎯 *Total de fatos hoje:* ${student.records.length}\n\n✅ *Na ponta da língua:* ${student.records.filter(r=>r.status==='acertou').length}\n💡 *Raciocínio em ação:* ${student.records.filter(r=>r.status==='pensou_trocou_acertou').length}\n🤔 *Para treinar mais:* ${student.records.filter(r=>r.status==='pensou_trocou_errou'||r.status==='errou').length}\n\n_Dica: Brinque de perguntar os fatos no dia a dia!_`)}`, '_blank');
     }
 
-    // ==============================================================
-    // LÓGICA DE GERAÇÃO DAS FICHAS DE IMPRESSÃO (NOVO DESIGN)
-    // ==============================================================
     function generateSlipHTML(student) {
       const total = student.records.length;
       if(total === 0) return '';
@@ -658,7 +665,6 @@
       `;
     }
 
-    // IMPRIMIR APENAS 1 FICHA
     function printStudentSheet(studentId) {
       const s = appState.students.find(st => st.id === studentId);
       if (!s) return;
@@ -670,7 +676,6 @@
       window.print();
     }
 
-    // BOTÃO MÁGICO: IMPRIMIR TODA A TURMA
     function printAllSlips() {
       const turma = appState.selectedClass;
       const students = appState.students.filter(s => s.class === turma && s.records.length > 0);
@@ -683,7 +688,6 @@
       let html = `<div style="padding: 10px;">`;
       students.forEach((student, index) => {
           html += generateSlipHTML(student);
-          // Adiciona a linha de tesoura (menos no último aluno)
           if(index < students.length - 1) {
               html += `<div style="text-align: center; margin: 30px 0 25px 0; border-bottom: 2px dashed #94a3b8; position: relative;">
                           <span style="position: absolute; top: -14px; left: 50%; margin-left: -15px; background: white; padding: 0 10px; font-size: 20px;">✂️</span>
@@ -696,7 +700,6 @@
       window.print();
     }
 
-    // IMPRIMIR ATA DA TURMA
     function printClassSummary() {
       const turma = appState.selectedClass, students = appState.students.filter(s => s.class === turma);
       const rows = students.map((s, i) => `<tr><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${i+1}</td><td style="padding:5px;border:1px solid #cbd5e1;font-weight:600;">${s.name}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;font-weight:bold;">${s.records.length}</td></tr>`).join('');
