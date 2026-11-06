@@ -263,23 +263,23 @@
 
   </main>
 
-  <!-- ÁREA EXCLUSIVA DE IMPRESSÃO -->
+  <!-- ÁREA EXCLUSIVA DE IMPRESSÃO (LIMPA E OTIMIZADA PARA A4) -->
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
     // =========================================================================
-    // URL EXATA DO GOOGLE APPS SCRIPT
+    // URL EXATA DO GOOGLE APPS SCRIPT ATUALIZADA
     // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec"; 
 
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V2';
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V3';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
-    // Tentativa de puxar a memória mais recente do aparelho
+    // Puxar a memória
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V1')) || 
-                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_CLOUD_V2')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V2')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V1')) || 
                    defaultState;
     }
 
@@ -321,16 +321,18 @@
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       
+      // NOVA FORMA DE ENVIO DE DADOS PARA EVITAR BLOQUEIO DO NAVEGADOR
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         showCloudSyncing();
         fetch(GOOGLE_SHEETS_API_URL, {
           method: 'POST',
+          mode: 'no-cors', // Isto desativa a validação rígida do navegador
           headers: {
-            'Content-Type': 'text/plain;charset=utf-8' // OBRIGATÓRIO PARA NÃO DAR ERRO DE CORS
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(appState)
         })
-        .then(response => showCloudSuccess())
+        .then(() => showCloudSuccess())
         .catch(err => {
             console.error("Erro no salvamento", err);
             showCloudError();
@@ -344,7 +346,7 @@
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         document.getElementById('loading-overlay').style.display = 'flex';
         try {
-          const response = await fetch(GOOGLE_SHEETS_API_URL, { redirect: 'follow' });
+          const response = await fetch(GOOGLE_SHEETS_API_URL);
           const cloudData = await response.json();
           if (cloudData && cloudData.students) {
             appState = cloudData;
