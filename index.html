@@ -27,6 +27,11 @@
       body { background-color: white !important; margin: 0; padding: 0; }
       #print-area { display: block !important; width: 100%; margin: 0; padding: 0; }
       .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+      
+      /* Cores de Impressão Garantidas */
+      .print-bg-green { background-color: #dcfce7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .print-bg-yellow { background-color: #fef9c3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .print-bg-red { background-color: #fee2e2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
@@ -269,7 +274,7 @@
 
   </main>
 
-  <!-- ÁREA EXCLUSIVA DE IMPRESSÃO -->
+  <!-- ÁREA EXCLUSIVA DE IMPRESSÃO (LIMPA E OTIMIZADA PARA A4) -->
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
@@ -278,15 +283,13 @@
     // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec"; 
 
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V7';
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V8';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
-    // Tenta puxar a memória
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V6')) || 
-                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V4')) || 
-                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V3')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V7')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V6')) || 
                    defaultState;
     }
 
@@ -376,12 +379,12 @@
       renderClassPills();
       renderStudentChips();
       updateActiveStudentHeader();
-      updateSessionMetrics();
       
       if (currentStudentId) {
         selectStudent(currentStudentId);
       } else {
-        checkActiveState();
+        updateSessionMetrics(); 
+        checkActiveState(); 
       }
       
       lucide.createIcons();
@@ -482,7 +485,6 @@
       display.innerHTML = student ? `<span class="text-indigo-600">${student.name}</span><span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">${student.class}</span>` : '<span class="text-slate-400">Nenhum selecionado</span>';
     }
 
-    // A MÁGICA: GARANTINDO QUE A TELA DE CONTA FICA VISÍVEL SE HOUVER ALUNO SELECIONADO
     function checkActiveState() {
       const student = appState.students.find(s => s.id === currentStudentId);
       const assessmentArea = document.getElementById('assessment-active-area');
@@ -527,7 +529,11 @@
       if (!appState.students.find(s => s.id === currentStudentId)) return;
       const isMult = appState.operationMode === 'mult' ? true : appState.operationMode === 'div' ? false : Math.random() > 0.5;
       const a = Math.floor(Math.random() * 9) + 2, b = Math.floor(Math.random() * 9) + 2;
-      currentFact = isMult ? { text: `${a} × ${b}`, answer: a * b, op: 'mult' } : { text: `${a * b} ÷ ${a}`, answer: b, op: 'div' };
+      
+      // Regista se a operação gerada foi mult ou div para o relatório
+      const operationType = isMult ? 'mult' : 'div';
+      
+      currentFact = isMult ? { text: `${a} × ${b}`, answer: a * b, op: operationType } : { text: `${a * b} ÷ ${a}`, answer: b, op: operationType };
       document.getElementById('fact-display').innerText = currentFact.text;
       document.getElementById('answer-text').innerText = currentFact.answer;
       startTimer();
@@ -536,7 +542,7 @@
     function recordAttempt(status) {
       const student = appState.students.find(s => s.id === currentStudentId);
       if (!student) return alert('Selecione um estudante.');
-      student.records.unshift({ id: Date.now(), fact: currentFact.text, status: status, date: new Date().toISOString() });
+      student.records.unshift({ id: Date.now(), fact: currentFact.text, status: status, op: currentFact.op, date: new Date().toISOString() });
       saveData(); 
       updateSessionMetrics(); 
       renderStudentChips(document.getElementById('student-search').value);
@@ -676,6 +682,35 @@
       const acertos = student.records.filter(r => r.status === 'acertou').length;
       const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
       const errouGeral = student.records.filter(r => r.status === 'pensou_trocou_errou' || r.status === 'errou').length;
+      
+      // Contagens Separadas para o Relatório Novo
+      const totalMult = student.records.filter(r => r.op === 'mult').length;
+      const acertosMult = student.records.filter(r => r.op === 'mult' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+      
+      const totalDiv = student.records.filter(r => r.op === 'div').length;
+      const acertosDiv = student.records.filter(r => r.op === 'div' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+
+      // Cálculo de Média
+      const aproveitamentoGeral = total > 0 ? Math.round(((acertos + pensouAcertou) / total) * 100) : 0;
+      
+      let colorClass = '';
+      let feedbackMessage = '';
+      
+      if(aproveitamentoGeral >= 80) {
+          colorClass = 'print-bg-green';
+          feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
+      } else if (aproveitamentoGeral >= 50) {
+          colorClass = 'print-bg-yellow';
+          feedbackMessage = `⚠️ <strong>Bom trabalho!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. Precisa de um pouco mais de treino em casa para ganhar velocidade.`;
+      } else {
+          colorClass = 'print-bg-red';
+          feedbackMessage = `🚨 <strong>Alerta Pedagógico:</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. O(a) estudante precisa de ajuda em casa urgente para decorar os fatos básicos!`;
+      }
+      
+      // Data formatada para período
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('pt-BR');
+      const currentDay = today.toLocaleDateString('pt-BR');
 
       return `
         <div class="avoid-break" style="border: 2px solid #1e293b; border-radius: 12px; padding: 20px; font-family: sans-serif; color: #000; margin-bottom: 5px; background: white; width: 100%; box-sizing: border-box;">
@@ -685,51 +720,59 @@
                <div>
                    <p style="font-size: 11px; font-weight: bold; margin: 0; text-transform: uppercase; color: #475569;">Escola Estadual Mestra Aurora - Carbonita/MG</p>
                    <h2 style="font-size: 16px; font-weight: 900; margin: 3px 0; color: #0f172a;">PROJETO FATOS EM FOCO</h2>
-                   <p style="font-size: 12px; margin: 0; font-style: italic; color: #334155;">Acompanhamento Pedagógico: Maratona do Raciocínio</p>
+                   <p style="font-size: 12px; margin: 0; font-style: italic; color: #334155;">Boletim de Acompanhamento Pedagógico</p>
                </div>
            </div>
 
-           <div style="margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-               <div><strong>Estudante:</strong> ${student.name}</div>
-               <div><strong>Turma:</strong> ${student.class}</div>
+           <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+               <div>
+                   <div style="margin-bottom: 4px;"><strong>Estudante:</strong> ${student.name}</div>
+                   <div><strong>Turma:</strong> ${student.class}</div>
+               </div>
+               <div style="text-align: right; font-size: 12px; color: #475569;">
+                   <strong>Período Verificado:</strong><br/>
+                   ${firstDay} a ${currentDay}
+               </div>
            </div>
 
            <p style="font-size: 13px; line-height: 1.5; margin-bottom: 15px;">
-               <strong>Olá, família!</strong> Abaixo estão os resultados da nossa aferição oral de multiplicação e divisão. Nosso objetivo é incentivar o cálculo mental e o domínio das operações básicas.
+               <strong>Olá, família!</strong> Apresentamos o desempenho da nossa avaliação oral contínua. O cálculo mental rápido é a base para o sucesso na matemática.
            </p>
 
            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px;">
                <thead>
                    <tr>
-                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: left; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Critério Observado</th>
-                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: center; width: 100px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Quantidade</th>
+                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: left; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Desempenho por Operação</th>
+                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: center; width: 100px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Multiplicação</th>
+                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: center; width: 100px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Divisão</th>
+                       <th style="border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px; text-align: center; width: 100px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">TOTAL GERAL</th>
                    </tr>
                </thead>
                <tbody>
                    <tr>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>Na ponta da língua!</strong> (Acertou direto com rapidez)</td>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 900; font-size: 15px;">${acertos}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>Fatos Perguntados</strong></td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${totalMult}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${totalDiv}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold;">${total}</td>
                    </tr>
                    <tr>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>Raciocínio em Ação!</strong> (Pensou, corrigiu e acertou)</td>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 900; font-size: 15px;">${pensouAcertou}</td>
-                   </tr>
-                   <tr>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>Para treinar em casa</strong> (Gerou dúvida ou erro)</td>
-                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 900; font-size: 15px;">${errouGeral}</td>
-                   </tr>
-                   <tr>
-                       <td style="border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 8px; text-align: right; -webkit-print-color-adjust: exact; print-color-adjust: exact;"><strong>Total de fatos testados:</strong></td>
-                       <td style="border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 8px; text-align: center; font-weight: 900; font-size: 15px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${total}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px;"><strong>Fatos que o Aluno Acertou</strong></td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${acertosMult}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${acertosDiv}</td>
+                       <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold;">${acertos + pensouAcertou}</td>
                    </tr>
                </tbody>
            </table>
 
-           <div style="font-size: 12px; margin-bottom: 30px; font-style: italic; border-left: 3px solid #94a3b8; padding-left: 10px;">
-               <strong>Dica:</strong> O treino diário em casa com perguntas rápidas ajuda muito na memorização!
+           <div class="${colorClass}" style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 20px;">
+               ${feedbackMessage}
            </div>
 
-           <div style="display: flex; justify-content: space-between; font-size: 12px; text-align: center;">
+           <div style="font-size: 11px; font-style: italic; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+               <strong style="color: #0f172a;">Detalhe da Avaliação:</strong> De ${total} fatos, o aluno acertou rápido (${acertos}), precisou pensar/corrigir (${pensouAcertou}), e errou ou teve muita dúvida em (${errouGeral}).
+           </div>
+
+           <div style="display: flex; justify-content: space-between; font-size: 12px; text-align: center; margin-top: 40px;">
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Professora Erlaine</div>
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Ciente do Responsável</div>
            </div>
@@ -737,6 +780,7 @@
       `;
     }
 
+    // IMPRIMIR APENAS 1 FICHA
     function printStudentSheet(studentId) {
       const s = appState.students.find(st => st.id === studentId);
       if (!s) return;
@@ -748,6 +792,7 @@
       window.print();
     }
 
+    // BOTÃO MÁGICO: IMPRIMIR TODA A TURMA
     function printAllSlips() {
       const turma = appState.selectedClass;
       const students = appState.students.filter(s => s.class === turma && s.records.length > 0);
@@ -772,6 +817,7 @@
       window.print();
     }
 
+    // IMPRIMIR ATA DA TURMA
     function printClassSummary() {
       const turma = appState.selectedClass, students = appState.students.filter(s => s.class === turma);
       const rows = students.map((s, i) => `<tr><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${i+1}</td><td style="padding:5px;border:1px solid #cbd5e1;font-weight:600;">${s.name}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;font-weight:bold;">${s.records.length}</td></tr>`).join('');
@@ -779,7 +825,7 @@
       window.print();
     }
 
-    // INICIALIZA O SISTEMA E VERIFICA MEMÓRIA ANTERIOR
+    // DISPARA A INICIALIZAÇÃO
     initApp();
 
   </script>
