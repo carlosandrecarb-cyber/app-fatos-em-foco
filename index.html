@@ -18,7 +18,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
 
-    /* REGRAS RÍGIDAS E PERFEITAS PARA IMPRESSÃO */
+    /* REGRAS PARA IMPRESSÃO */
     @media screen {
       #print-area { display: none !important; }
     }
@@ -27,8 +27,6 @@
       body { background-color: white !important; margin: 0; padding: 0; }
       #print-area { display: block !important; width: 100%; margin: 0; padding: 0; }
       .avoid-break { page-break-inside: avoid; break-inside: avoid; }
-      
-      /* Cores de Impressão Garantidas */
       .print-bg-green { background-color: #dcfce7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .print-bg-yellow { background-color: #fef9c3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .print-bg-red { background-color: #fee2e2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -37,26 +35,23 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-  <!-- Formulário Oculto para Envio Nativo (Ignora CORS) -->
+  <!-- Formulário Oculto para Nuvem -->
   <iframe name="hidden-iframe" style="display:none;"></iframe>
   <form id="hidden-form" method="POST" target="hidden-iframe" style="display:none;" action="https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec">
       <textarea name="payload" id="hidden-payload"></textarea>
   </form>
 
-  <!-- Ecrã de Carregamento Inicial -->
   <div id="loading-overlay" style="display: none;">
     <i data-lucide="cloud-download" class="w-12 h-12 text-indigo-600 animate-bounce mb-4"></i>
     <h2 class="text-xl font-bold text-slate-800">A conectar ao Banco de Dados...</h2>
     <p class="text-sm text-slate-500 mt-2">A extrair informações da nuvem</p>
   </div>
 
-  <!-- Cabeçalho Principal -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-      
       <div class="flex items-center gap-3">
         <div class="h-14 flex items-center justify-center shrink-0">
-          <img src="logo.png" alt="Logo Escola Estadual Mestra Aurora" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
+          <img src="logo.png" alt="Logo Escola" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
           <span id="fallback-logo-text" class="hidden text-xs font-bold text-slate-700 border border-slate-300 rounded-xl p-1 bg-slate-50 text-center">EEMA</span>
         </div>
         <div>
@@ -70,8 +65,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Abas de Navegação -->
       <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-semibold mt-2 sm:mt-0">
         <button onclick="switchTab('afericao')" id="tab-btn-afericao" class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-white text-indigo-600 shadow-xs font-bold">
           <i data-lucide="zap" class="w-4 h-4"></i> Aferição Rápida
@@ -86,19 +79,15 @@
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6">
-
-    <!-- ABA 1: AFERIÇÃO ORAL RÁPIDA -->
+    <!-- ABA 1: AFERIÇÃO -->
     <section id="tab-afericao" class="space-y-5">
-      
       <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Turma:</span>
             <div class="inline-flex p-1 bg-slate-100 rounded-xl text-xs font-medium overflow-x-auto max-w-full custom-scroll" id="class-pills"></div>
           </div>
-
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <button onclick="pickRandomStudent()" class="flex-1 sm:flex-initial px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition">
               <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Sortear Aluno
@@ -109,7 +98,6 @@
             </div>
           </div>
         </div>
-
         <div class="bg-slate-50/60 p-2.5 rounded-2xl border border-slate-100">
           <div class="flex items-center justify-between mb-1.5 px-1">
             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Selecione o Estudante:</span>
@@ -120,9 +108,7 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        
         <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col items-center justify-start text-center relative overflow-hidden min-h-[420px]">
-          
           <div class="w-full flex items-center justify-between mb-4">
             <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
               <button onclick="setOperation('all')" id="op-btn-all" class="px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-xs font-bold">Misto</button>
@@ -133,7 +119,6 @@
               <i data-lucide="timer" class="w-5 h-5"></i><span id="timer-seconds">30s</span>
             </div>
           </div>
-
           <div class="mb-4 flex flex-col items-center border-b border-slate-100 pb-4 w-full">
             <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Avaliando Agora</span>
             <div id="active-student-display" class="text-xl sm:text-2xl font-black text-slate-800 flex items-center justify-center gap-2">
@@ -141,8 +126,6 @@
             </div>
             <div id="fact-progress-badge" class="mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full hidden shadow-sm">Iniciando...</div>
           </div>
-
-          <!-- ÁREA ATIVA DO FACTO -->
           <div id="assessment-active-area" class="w-full flex-col items-center hidden">
             <div class="py-2 flex flex-col items-center relative w-full">
               <button onclick="generateNextFact()" title="Pular este fato" class="absolute right-0 top-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition flex flex-col items-center">
@@ -153,7 +136,6 @@
                 <i data-lucide="key" class="w-4 h-4 opacity-70"></i><span>Gabarito:</span><span id="answer-text" class="text-2xl ml-1">56</span>
               </div>
             </div>
-
             <div class="w-full grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-6 mt-4 border-t border-slate-100">
               <button onclick="recordAttempt('acertou')" class="p-3 sm:p-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-xs transition active:scale-95">
                 <i data-lucide="check-circle" class="w-5 h-5 mb-1"></i><span>Acertou</span>
@@ -179,20 +161,17 @@
                 <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Zerar
               </button>
             </div>
-
             <div class="grid grid-cols-2 gap-2 my-4">
               <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-2xl text-center"><span class="text-[11px] font-bold text-emerald-700 block">Acertos</span><span id="count-acertos" class="text-xl font-black text-emerald-800">0</span></div>
               <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-2xl text-center"><span class="text-[11px] font-bold text-blue-700 block">Pensou/Acertou</span><span id="count-pensou-acertou" class="text-xl font-black text-blue-800">0</span></div>
               <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-2xl text-center"><span class="text-[11px] font-bold text-amber-700 block">Pensou/Errou</span><span id="count-pensou-errou" class="text-xl font-black text-amber-800">0</span></div>
               <div class="bg-rose-50 border border-rose-100 p-2.5 rounded-2xl text-center"><span class="text-[11px] font-bold text-rose-700 block">Erros diretos</span><span id="count-erros" class="text-xl font-black text-rose-800">0</span></div>
             </div>
-
             <span class="text-xs font-semibold text-slate-600 block mb-2">Fatos Respondidos:</span>
             <div id="recent-answers-list" class="space-y-1.5 max-h-56 overflow-y-auto custom-scroll pr-1 text-xs">
               <p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>
             </div>
           </div>
-
           <div class="pt-4 border-t border-slate-100 flex gap-2 mt-4">
             <button onclick="printStudentSheet(currentStudentId)" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i> Ficha Individual
@@ -202,15 +181,12 @@
             </button>
           </div>
         </div>
-
       </div>
-
     </section>
 
-    <!-- ABA 2: GESTÃO DE ESTUDANTES & TURMAS -->
+    <!-- ABA 2: GESTÃO -->
     <section id="tab-turmas" class="hidden space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
         <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
           <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
             <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Adicionar Aluno(s)
@@ -232,7 +208,6 @@
             <button onclick="importBulkStudents()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">Importar em Lote para a Turma</button>
           </div>
         </div>
-
         <div class="md:col-span-2 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700">Lista Geral de Estudantes</h2>
@@ -256,8 +231,8 @@
     <section id="tab-relatorios" class="hidden space-y-5">
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-bold text-slate-900">Relatórios & Impressão para Caderno</h2>
-          <p class="text-xs text-slate-500 mt-1">Imprima o acompanhamento geral da turma ou todas as fichas para recortar.</p>
+          <h2 class="text-base font-bold text-slate-900">Relatórios Pedagógicos de Turma e Alunos</h2>
+          <p class="text-xs text-slate-500 mt-1">Acompanhamento geral da turma e análise individual detalhada com alertas de desempenho.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button onclick="printClassSummary()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-300">
@@ -269,26 +244,25 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="turmas-summary-cards"></div>
+      <!-- CARDS DE RELATÓRIO EXPANSÍVEIS (NOVA FUNCIONALIDADE) -->
+      <div class="space-y-5" id="turmas-summary-cards"></div>
     </section>
 
   </main>
 
-  <!-- ÁREA EXCLUSIVA DE IMPRESSÃO (LIMPA E OTIMIZADA PARA A4) -->
+  <!-- ÁREA DE IMPRESSÃO -->
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
-    // =========================================================================
-    // URL EXATA DO GOOGLE APPS SCRIPT ATUALIZADA
-    // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec"; 
 
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V8';
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V9';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V7')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V8')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V7')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V6')) || 
                    defaultState;
     }
@@ -330,25 +304,18 @@
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         showCloudSyncing();
         try {
             document.getElementById('hidden-payload').value = JSON.stringify(appState);
             document.getElementById('hidden-form').submit();
             setTimeout(showCloudSuccess, 1000); 
-        } catch(e) {
-            console.error("Erro no envio nativo", e);
-            showCloudError();
-        }
-      } else {
-        showLocalSuccess();
-      }
+        } catch(e) { console.error(e); showCloudError(); }
+      } else { showLocalSuccess(); }
     }
 
     async function initApp() {
       document.getElementById('loading-overlay').style.display = 'flex';
-      
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
         try {
           const response = await fetch(GOOGLE_SHEETS_API_URL);
@@ -358,35 +325,16 @@
               if (cloudData && cloudData.students && cloudData.students.length > 0) {
                   appState = cloudData;
                   showCloudSuccess();
-              } else {
-                  saveData();
-              }
-          } else {
-             saveData(); 
-          }
-        } catch(e) {
-          console.error("Usando backup local offline", e);
-          showCloudError();
-        }
+              } else { saveData(); }
+          } else { saveData(); }
+        } catch(e) { console.error("Offline", e); showCloudError(); }
       }
-
       document.getElementById('loading-overlay').style.display = 'none';
       if (!appState.classList) appState.classList = ['6º REG 1', '6º REG 2'];
-      
       const studentsOfClass = appState.students.filter(s => s.class === appState.selectedClass);
       currentStudentId = studentsOfClass.length > 0 ? studentsOfClass[0].id : null;
-
-      renderClassPills();
-      renderStudentChips();
-      updateActiveStudentHeader();
-      
-      if (currentStudentId) {
-        selectStudent(currentStudentId);
-      } else {
-        updateSessionMetrics(); 
-        checkActiveState(); 
-      }
-      
+      renderClassPills(); renderStudentChips(); updateActiveStudentHeader(); updateSessionMetrics();
+      if (currentStudentId) selectStudent(currentStudentId); else checkActiveState();
       lucide.createIcons();
     }
 
@@ -406,8 +354,7 @@
     }
 
     function renderClassPills() {
-      const container = document.getElementById('class-pills');
-      container.innerHTML = '';
+      const container = document.getElementById('class-pills'); container.innerHTML = '';
       appState.classList.forEach(className => {
         const isSelected = appState.selectedClass === className;
         const btn = document.createElement('button');
@@ -419,19 +366,10 @@
     }
 
     function selectClassFilter(className) {
-      appState.selectedClass = className;
-      renderClassPills(); 
-      renderStudentChips();
-      
+      appState.selectedClass = className; renderClassPills(); renderStudentChips();
       const firstInClass = appState.students.find(s => s.class === className);
-      if (firstInClass) {
-        selectStudent(firstInClass.id);
-      } else {
-        currentStudentId = null; 
-        updateActiveStudentHeader(); 
-        updateSessionMetrics(); 
-        checkActiveState(); 
-      }
+      if (firstInClass) selectStudent(firstInClass.id);
+      else { currentStudentId = null; updateActiveStudentHeader(); updateSessionMetrics(); checkActiveState(); }
       saveData();
     }
 
@@ -440,12 +378,7 @@
       document.getElementById('student-total-label').innerText = `${appState.students.filter(s => s.class === appState.selectedClass).length} alunos`;
       container.innerHTML = '';
       const filtered = appState.students.filter(s => s.class === appState.selectedClass && s.name.toLowerCase().includes(filterQuery.toLowerCase()));
-      
-      if (filtered.length === 0) {
-        container.innerHTML = '<span class="text-xs text-slate-400 py-1">Nenhum estudante encontrado.</span>';
-        return;
-      }
-
+      if (filtered.length === 0) return container.innerHTML = '<span class="text-xs text-slate-400 py-1">Nenhum estudante encontrado.</span>';
       filtered.forEach(student => {
         const isSelected = student.id === currentStudentId;
         const count = student.records.length;
@@ -462,16 +395,9 @@
     function filterStudentChips() { renderStudentChips(document.getElementById('student-search').value); }
 
     function selectStudent(id) {
-      currentStudentId = id;
-      renderStudentChips(document.getElementById('student-search').value);
-      updateActiveStudentHeader(); 
-      updateSessionMetrics(); 
-      checkActiveState();
-      
-      const student = appState.students.find(s => s.id === id);
-      if (student) {
-        generateNextFact();
-      }
+      currentStudentId = id; renderStudentChips(document.getElementById('student-search').value);
+      updateActiveStudentHeader(); updateSessionMetrics(); checkActiveState();
+      if (appState.students.find(s => s.id === id)) generateNextFact();
     }
 
     function pickRandomStudent() {
@@ -490,20 +416,13 @@
       const assessmentArea = document.getElementById('assessment-active-area');
       const progressBadge = document.getElementById('fact-progress-badge');
       const timerDisplay = document.getElementById('timer-display');
-
       if (!student) {
-        assessmentArea.classList.add('hidden');
-        assessmentArea.classList.remove('flex');
-        progressBadge.classList.add('hidden');
-        timerDisplay.classList.add('opacity-0');
-        clearInterval(timerInterval);
-        return;
+        assessmentArea.classList.add('hidden'); assessmentArea.classList.remove('flex');
+        progressBadge.classList.add('hidden'); timerDisplay.classList.add('opacity-0');
+        return clearInterval(timerInterval);
       }
-
-      assessmentArea.classList.remove('hidden');
-      assessmentArea.classList.add('flex');
-      progressBadge.classList.remove('hidden');
-      progressBadge.innerText = `Fato ${student.records.length + 1}`;
+      assessmentArea.classList.remove('hidden'); assessmentArea.classList.add('flex');
+      progressBadge.classList.remove('hidden'); progressBadge.innerText = `Fato ${student.records.length + 1}`;
       progressBadge.className = "mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full shadow-sm";
       timerDisplay.classList.remove('opacity-0');
     }
@@ -529,10 +448,7 @@
       if (!appState.students.find(s => s.id === currentStudentId)) return;
       const isMult = appState.operationMode === 'mult' ? true : appState.operationMode === 'div' ? false : Math.random() > 0.5;
       const a = Math.floor(Math.random() * 9) + 2, b = Math.floor(Math.random() * 9) + 2;
-      
-      // Regista se a operação gerada foi mult ou div para o relatório
       const operationType = isMult ? 'mult' : 'div';
-      
       currentFact = isMult ? { text: `${a} × ${b}`, answer: a * b, op: operationType } : { text: `${a * b} ÷ ${a}`, answer: b, op: operationType };
       document.getElementById('fact-display').innerText = currentFact.text;
       document.getElementById('answer-text').innerText = currentFact.answer;
@@ -543,39 +459,28 @@
       const student = appState.students.find(s => s.id === currentStudentId);
       if (!student) return alert('Selecione um estudante.');
       student.records.unshift({ id: Date.now(), fact: currentFact.text, status: status, op: currentFact.op, date: new Date().toISOString() });
-      saveData(); 
-      updateSessionMetrics(); 
-      renderStudentChips(document.getElementById('student-search').value);
-      checkActiveState(); 
-      generateNextFact();
+      saveData(); updateSessionMetrics(); renderStudentChips(document.getElementById('student-search').value);
+      checkActiveState(); generateNextFact();
     }
 
     function updateSessionMetrics() {
       const student = appState.students.find(s => s.id === currentStudentId);
       const list = document.getElementById('recent-answers-list');
-      
       let stats = { acertou: 0, pensou_trocou_acertou: 0, pensou_trocou_errou: 0, errou: 0 };
-      
       if (!student || student.records.length === 0) {
-        document.getElementById('count-acertos').innerText = '0';
-        document.getElementById('count-pensou-acertou').innerText = '0';
-        document.getElementById('count-pensou-errou').innerText = '0';
-        document.getElementById('count-erros').innerText = '0';
+        Object.keys(stats).forEach(k => document.getElementById(`count-${k.replace(/_/g, '-')}`).innerText = '0');
         return list.innerHTML = '<p class="text-slate-400 italic text-center py-4">Nenhum fato registrado ainda.</p>';
       }
-      
       list.innerHTML = '';
       student.records.forEach((r, i) => {
         if (r.status === 'acertou') stats.acertou++;
         if (r.status === 'pensou_trocou_acertou') stats.pensou_trocou_acertou++;
         if (r.status === 'pensou_trocou_errou') stats.pensou_trocou_errou++;
         if (r.status === 'errou') stats.errou++;
-        
         const colors = { acertou: 'text-emerald-700 bg-emerald-100', pensou_trocou_acertou: 'text-blue-700 bg-blue-100', pensou_trocou_errou: 'text-amber-700 bg-amber-100', errou: 'text-rose-700 bg-rose-100' };
         const labels = { acertou: 'Acertou', pensou_trocou_acertou: 'Pensou/Acertou', pensou_trocou_errou: 'Pensou/Errou', errou: 'Errou' };
         list.innerHTML += `<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs mb-1.5"><div class="flex items-center gap-2"><span class="text-[9px] font-bold text-slate-400 w-4">${student.records.length - i}º</span><span class="font-bold text-slate-800 text-sm">${r.fact}</span></div><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[r.status]}">${labels[r.status]}</span></div>`;
       });
-      
       document.getElementById('count-acertos').innerText = stats.acertou;
       document.getElementById('count-pensou-acertou').innerText = stats.pensou_trocou_acertou;
       document.getElementById('count-pensou-errou').innerText = stats.pensou_trocou_errou;
@@ -632,13 +537,8 @@
     function deleteStudent(id) {
       if (confirm(`Excluir este estudante?`)) {
         appState.students = appState.students.filter(s => s.id !== id);
-        if (currentStudentId === id) {
-          currentStudentId = null;
-        }
-        saveData(); 
-        renderStudentsTable(); 
-        renderStudentChips(); 
-        checkActiveState();
+        if (currentStudentId === id) currentStudentId = null;
+        saveData(); renderStudentsTable(); renderStudentChips(); checkActiveState();
       }
     }
 
@@ -652,14 +552,112 @@
       lucide.createIcons();
     }
 
+    // ==============================================================
+    // NOVO MÓDULO DE RELATÓRIOS PEDAGÓGICOS INDIVIDUAIS NOS CARDS
+    // ==============================================================
     function renderClassSummaryCards() {
-      const container = document.getElementById('turmas-summary-cards'); container.innerHTML = '';
+      const container = document.getElementById('turmas-summary-cards'); 
+      container.innerHTML = '';
+      
       appState.classList.forEach(turma => {
         const students = appState.students.filter(s => s.class === turma);
         let totalFatos = 0, totalAcertos = 0;
-        students.forEach(s => { totalFatos += s.records.length; totalAcertos += s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length; });
-        container.insertAdjacentHTML('beforeend', `<div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3"><div class="flex items-center justify-between"><h3 class="text-base font-bold text-slate-800">${turma}</h3><span class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold">${students.length} Alunos</span></div><div class="grid grid-cols-2 gap-2 text-center"><div class="bg-slate-50 p-2.5 rounded-2xl"><span class="text-[10px] uppercase font-bold text-slate-400 block">Fatos Aferidos</span><span class="text-lg font-black text-slate-800">${totalFatos}</span></div><div class="bg-slate-50 p-2.5 rounded-2xl"><span class="text-[10px] uppercase font-bold text-slate-400 block">Aproveitamento</span><span class="text-lg font-black text-emerald-600">${totalFatos > 0 ? Math.round((totalAcertos/totalFatos)*100) : 0}%</span></div></div></div>`);
+        
+        students.forEach(s => { 
+            totalFatos += s.records.length; 
+            totalAcertos += s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length; 
+        });
+        
+        const aproveitamento = totalFatos > 0 ? Math.round((totalAcertos/totalFatos)*100) : 0;
+        const isExp = appState.expandedClass === turma; // Estado para manter aberto
+
+        // Gerar os cards dos alunos dessa turma
+        let studentsHtml = '';
+        if (students.length === 0) {
+            studentsHtml = '<p class="text-xs text-slate-400 text-center py-4">Nenhum aluno cadastrado nesta turma.</p>';
+        } else {
+            students.forEach(s => {
+                const sTotal = s.records.length;
+                const sAcertos = s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length;
+                const sPerc = sTotal > 0 ? Math.round((sAcertos/sTotal)*100) : 0;
+                
+                let colorBg = 'bg-slate-50', colorText = 'text-slate-600', feedback = 'Sem dados suficientes';
+                
+                if (sTotal > 0) {
+                    if (sPerc >= 70) {
+                        colorBg = 'bg-emerald-50 border-emerald-200'; colorText = 'text-emerald-700';
+                        feedback = 'Bom domínio. Raciocínio rápido.';
+                    } else if (sPerc >= 40) {
+                        colorBg = 'bg-amber-50 border-amber-200'; colorText = 'text-amber-700';
+                        feedback = 'Atenção. Precisa de treinar mais para ganhar agilidade.';
+                    } else {
+                        colorBg = 'bg-rose-50 border-rose-200'; colorText = 'text-rose-700';
+                        feedback = 'Alerta! Intervenção necessária na memorização básica.';
+                    }
+                }
+
+                studentsHtml += `
+                    <div class="flex flex-col sm:flex-row items-center justify-between p-3 rounded-xl border ${colorBg} mb-2 transition-all">
+                        <div class="w-full sm:w-1/2 mb-2 sm:mb-0">
+                            <span class="text-sm font-bold ${colorText} block leading-tight">${s.name}</span>
+                            <span class="text-[10px] font-semibold text-slate-500">${sTotal} fatos avaliados</span>
+                        </div>
+                        <div class="w-full sm:w-1/2 flex items-center justify-between sm:justify-end gap-4">
+                            <p class="text-[10px] sm:text-xs leading-tight opacity-90 ${colorText} text-left sm:text-right flex-1">${feedback}</p>
+                            <div class="flex flex-col items-center shrink-0 bg-white px-3 py-1 rounded-lg shadow-sm border border-black/5">
+                                <span class="text-[9px] font-bold uppercase text-slate-400">Acertos</span>
+                                <span class="text-base font-black ${colorText}">${sPerc}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Criar o Card Principal da Turma
+        const card = document.createElement('div');
+        card.className = "bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4 mb-4 transition-all";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  ${turma}
+                  <span class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full font-bold border border-indigo-100">${students.length} Alunos</span>
+              </h3>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Fatos Aferidos na Turma</span>
+              <span class="text-xl font-black text-slate-800">${totalFatos}</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Aproveitamento Médio</span>
+              <span class="text-xl font-black ${aproveitamento >= 70 ? 'text-emerald-600' : aproveitamento >= 40 ? 'text-amber-500' : 'text-rose-600'}">${aproveitamento}%</span>
+            </div>
+          </div>
+          
+          <button onclick="toggleTurmaDetails('${turma}')" class="w-full mt-2 py-2 bg-slate-100 hover:bg-slate-200 text-indigo-600 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2">
+              <i data-lucide="${isExp ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4"></i>
+              ${isExp ? 'Ocultar Desempenho dos Alunos' : 'Ver Desempenho dos Alunos'}
+          </button>
+          
+          <div id="details-${turma.replace(/\s+/g, '-')}" class="${isExp ? 'block' : 'hidden'} pt-4 border-t border-slate-100 mt-4">
+              <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Análise Pedagógica Individual</h4>
+              ${studentsHtml}
+          </div>
+        `;
+        container.appendChild(card);
       });
+      lucide.createIcons();
+    }
+
+    // Função para abrir/fechar a lista de alunos nos Relatórios
+    function toggleTurmaDetails(turma) {
+        if (appState.expandedClass === turma) {
+            appState.expandedClass = null; // Fecha
+        } else {
+            appState.expandedClass = turma; // Abre
+        }
+        renderClassSummaryCards(); // Recarrega os relatórios para mostrar a mudança
     }
 
     function exportDataJSON() {
@@ -678,43 +676,28 @@
     function generateSlipHTML(student) {
       const total = student.records.length;
       if(total === 0) return '';
-      
       const acertos = student.records.filter(r => r.status === 'acertou').length;
       const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
       const errouGeral = student.records.filter(r => r.status === 'pensou_trocou_errou' || r.status === 'errou').length;
-      
-      // Contagens Separadas para o Relatório Novo
       const totalMult = student.records.filter(r => r.op === 'mult').length;
       const acertosMult = student.records.filter(r => r.op === 'mult' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
-      
       const totalDiv = student.records.filter(r => r.op === 'div').length;
       const acertosDiv = student.records.filter(r => r.op === 'div' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
-
-      // Cálculo de Média
       const aproveitamentoGeral = total > 0 ? Math.round(((acertos + pensouAcertou) / total) * 100) : 0;
-      
-      let colorClass = '';
-      let feedbackMessage = '';
-      
+      let colorClass = ''; let feedbackMessage = '';
       if(aproveitamentoGeral >= 80) {
-          colorClass = 'print-bg-green';
-          feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
+          colorClass = 'print-bg-green'; feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
       } else if (aproveitamentoGeral >= 50) {
-          colorClass = 'print-bg-yellow';
-          feedbackMessage = `⚠️ <strong>Bom trabalho!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. Precisa de um pouco mais de treino em casa para ganhar velocidade.`;
+          colorClass = 'print-bg-yellow'; feedbackMessage = `⚠️ <strong>Bom trabalho!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. Precisa de um pouco mais de treino em casa para ganhar velocidade.`;
       } else {
-          colorClass = 'print-bg-red';
-          feedbackMessage = `🚨 <strong>Alerta Pedagógico:</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. O(a) estudante precisa de ajuda em casa urgente para decorar os fatos básicos!`;
+          colorClass = 'print-bg-red'; feedbackMessage = `🚨 <strong>Alerta Pedagógico:</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. O(a) estudante precisa de ajuda em casa urgente para decorar os fatos básicos!`;
       }
-      
-      // Data formatada para período
       const today = new Date();
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('pt-BR');
       const currentDay = today.toLocaleDateString('pt-BR');
 
       return `
         <div class="avoid-break" style="border: 2px solid #1e293b; border-radius: 12px; padding: 20px; font-family: sans-serif; color: #000; margin-bottom: 5px; background: white; width: 100%; box-sizing: border-box;">
-           
            <div style="display: flex; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 15px;">
                <img src="logo.png" style="height: 55px; width: auto; margin-right: 15px;" />
                <div>
@@ -723,7 +706,6 @@
                    <p style="font-size: 12px; margin: 0; font-style: italic; color: #334155;">Boletim de Acompanhamento Pedagógico</p>
                </div>
            </div>
-
            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                <div>
                    <div style="margin-bottom: 4px;"><strong>Estudante:</strong> ${student.name}</div>
@@ -734,11 +716,9 @@
                    ${firstDay} a ${currentDay}
                </div>
            </div>
-
            <p style="font-size: 13px; line-height: 1.5; margin-bottom: 15px;">
                <strong>Olá, família!</strong> Apresentamos o desempenho da nossa avaliação oral contínua. O cálculo mental rápido é a base para o sucesso na matemática.
            </p>
-
            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px;">
                <thead>
                    <tr>
@@ -763,15 +743,12 @@
                    </tr>
                </tbody>
            </table>
-
            <div class="${colorClass}" style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 20px;">
                ${feedbackMessage}
            </div>
-
            <div style="font-size: 11px; font-style: italic; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 10px;">
                <strong style="color: #0f172a;">Detalhe da Avaliação:</strong> De ${total} fatos, o aluno acertou rápido (${acertos}), precisou pensar/corrigir (${pensouAcertou}), e errou ou teve muita dúvida em (${errouGeral}).
            </div>
-
            <div style="display: flex; justify-content: space-between; font-size: 12px; text-align: center; margin-top: 40px;">
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Professora Erlaine</div>
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Ciente do Responsável</div>
@@ -780,7 +757,6 @@
       `;
     }
 
-    // IMPRIMIR APENAS 1 FICHA
     function printStudentSheet(studentId) {
       const s = appState.students.find(st => st.id === studentId);
       if (!s) return;
@@ -792,32 +768,22 @@
       window.print();
     }
 
-    // BOTÃO MÁGICO: IMPRIMIR TODA A TURMA
     function printAllSlips() {
       const turma = appState.selectedClass;
       const students = appState.students.filter(s => s.class === turma && s.records.length > 0);
-      
-      if(students.length === 0) {
-          alert(`Nenhum estudante com fatos registrados na turma ${turma}.`);
-          return;
-      }
-
+      if(students.length === 0) { alert(`Nenhum estudante com fatos registrados na turma ${turma}.`); return; }
       let html = `<div style="padding: 10px;">`;
       students.forEach((student, index) => {
           html += generateSlipHTML(student);
           if(index < students.length - 1) {
-              html += `<div style="text-align: center; margin: 30px 0 25px 0; border-bottom: 2px dashed #94a3b8; position: relative;">
-                          <span style="position: absolute; top: -14px; left: 50%; margin-left: -15px; background: white; padding: 0 10px; font-size: 20px;">✂️</span>
-                       </div>`;
+              html += `<div style="text-align: center; margin: 30px 0 25px 0; border-bottom: 2px dashed #94a3b8; position: relative;"><span style="position: absolute; top: -14px; left: 50%; margin-left: -15px; background: white; padding: 0 10px; font-size: 20px;">✂️</span></div>`;
           }
       });
       html += `</div>`;
-
       document.getElementById('print-area').innerHTML = html;
       window.print();
     }
 
-    // IMPRIMIR ATA DA TURMA
     function printClassSummary() {
       const turma = appState.selectedClass, students = appState.students.filter(s => s.class === turma);
       const rows = students.map((s, i) => `<tr><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${i+1}</td><td style="padding:5px;border:1px solid #cbd5e1;font-weight:600;">${s.name}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_acertou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='pensou_trocou_errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.records.filter(r=>r.status==='errou').length}</td><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;font-weight:bold;">${s.records.length}</td></tr>`).join('');
@@ -825,7 +791,6 @@
       window.print();
     }
 
-    // DISPARA A INICIALIZAÇÃO
     initApp();
 
   </script>
