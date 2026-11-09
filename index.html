@@ -18,10 +18,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
 
-    /* REGRAS PARA IMPRESSÃO */
-    @media screen {
-      #print-area { display: none !important; }
-    }
+    @media screen { #print-area { display: none !important; } }
     @media print {
       body > header, body > main, body > div#loading-overlay { display: none !important; }
       body { background-color: white !important; margin: 0; padding: 0; }
@@ -35,23 +32,18 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-  <!-- Formulário Oculto para Nuvem -->
-  <iframe name="hidden-iframe" style="display:none;"></iframe>
-  <form id="hidden-form" method="POST" target="hidden-iframe" style="display:none;" action="https://script.google.com/macros/s/AKfycbxfYFY1kUfMY8U7xxcGxUdd-7Z6XJVDOzCbWmQ7sL9Q4Wu-TNGE1a9h26OpReDCDsEX0Q/exec">
-      <textarea name="payload" id="hidden-payload"></textarea>
-  </form>
-
   <div id="loading-overlay" style="display: none;">
     <i data-lucide="cloud-download" class="w-12 h-12 text-indigo-600 animate-bounce mb-4"></i>
-    <h2 class="text-xl font-bold text-slate-800">A conectar ao Banco de Dados...</h2>
-    <p class="text-sm text-slate-500 mt-2">A extrair informações da nuvem</p>
+    <h2 class="text-xl font-bold text-slate-800">A sincronizar com a Nuvem...</h2>
+    <p class="text-sm text-slate-500 mt-2">Garantindo que vê os dados mais recentes</p>
   </div>
 
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      
       <div class="flex items-center gap-3">
         <div class="h-14 flex items-center justify-center shrink-0">
-          <img src="logo.png" alt="Logo Escola" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
+          <img src="logo.png" alt="Logo Escola Estadual Mestra Aurora" class="h-full w-auto object-contain drop-shadow-xs" onerror="this.style.display='none'; document.getElementById('fallback-logo-text').classList.remove('hidden');" />
           <span id="fallback-logo-text" class="hidden text-xs font-bold text-slate-700 border border-slate-300 rounded-xl p-1 bg-slate-50 text-center">EEMA</span>
         </div>
         <div>
@@ -59,13 +51,18 @@
           <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">PROJETO: FATOS EM FOCO - MARATONA DO RACIOCÍNIO</h1>
           <div class="flex items-center gap-3 mt-0.5">
             <p class="text-xs font-medium text-slate-500">Professora Erlaine</p>
-            <div id="cloud-status" class="flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[10px] font-bold border border-slate-200 transition-all hidden">
-              <i data-lucide="hard-drive" class="w-3 h-3"></i> <span>Salvo Localmente</span>
+            <div id="cloud-status" class="flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[10px] font-bold border border-slate-200 transition-all">
+              <i data-lucide="hard-drive" class="w-3 h-3"></i> <span>Aguardando Conexão</span>
             </div>
           </div>
         </div>
       </div>
+
       <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-semibold mt-2 sm:mt-0">
+        <!-- BOTÃO DE ATUALIZAÇÃO MANUAL ADICIONADO -->
+        <button onclick="syncFromCloud()" title="Atualizar dados de outros aparelhos" class="px-2 py-2 rounded-xl transition-all flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 mr-2">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
         <button onclick="switchTab('afericao')" id="tab-btn-afericao" class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-white text-indigo-600 shadow-xs font-bold">
           <i data-lucide="zap" class="w-4 h-4"></i> Aferição Rápida
         </button>
@@ -80,7 +77,7 @@
   </header>
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6">
-    <!-- ABA 1: AFERIÇÃO -->
+
     <section id="tab-afericao" class="space-y-5">
       <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -126,6 +123,8 @@
             </div>
             <div id="fact-progress-badge" class="mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full hidden shadow-sm">Iniciando...</div>
           </div>
+
+          <!-- ÁREA ATIVA GARANTIDA -->
           <div id="assessment-active-area" class="w-full flex-col items-center hidden">
             <div class="py-2 flex flex-col items-center relative w-full">
               <button onclick="generateNextFact()" title="Pular este fato" class="absolute right-0 top-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition flex flex-col items-center">
@@ -232,7 +231,7 @@
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 class="text-base font-bold text-slate-900">Relatórios Pedagógicos de Turma e Alunos</h2>
-          <p class="text-xs text-slate-500 mt-1">Acompanhamento geral da turma e análise individual detalhada com alertas de desempenho.</p>
+          <p class="text-xs text-slate-500 mt-1">Acompanhamento geral da turma e análise individual detalhada com alertas.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button onclick="printClassSummary()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-300">
@@ -243,27 +242,29 @@
           </button>
         </div>
       </div>
-
-      <!-- CARDS DE RELATÓRIO EXPANSÍVEIS (NOVA FUNCIONALIDADE) -->
       <div class="space-y-5" id="turmas-summary-cards"></div>
     </section>
-
   </main>
 
-  <!-- ÁREA DE IMPRESSÃO -->
   <div id="print-area" class="hidden p-6 bg-white text-slate-900"></div>
 
   <script>
+    // =========================================================================
+    // URL EXATA INSERIDA AQUI E PRONTA A USAR
+    // =========================================================================
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbywxwPSF572SyIXc88RUn_3DaiT4nL_XrwOYEB3WXGcWPexgL6Vmx-d6anMq7NDHDxFZg/exec"; 
 
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V9';
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V11';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
+    // Recuperação Segura da Memória (Prioridade para as versões mais antigas para não perder alunos)
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V8')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V10')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V9')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V8')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V7')) || 
-                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V6')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_DATA_V5')) || 
                    defaultState;
     }
 
@@ -273,71 +274,102 @@
     let timerInterval = null;
     let timeLeft = 30;
 
-    function showCloudSyncing() {
+    // CONTROLE VISUAL DA NUVEM
+    function updateCloudStatus(status) {
       const el = document.getElementById('cloud-status');
       el.classList.remove('hidden');
-      el.className = "flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md text-[10px] font-bold border border-amber-100 transition-all";
-      el.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> <span>A guardar...</span>';
-      lucide.createIcons();
-    }
-    function showCloudSuccess() {
-      const el = document.getElementById('cloud-status');
-      el.classList.remove('hidden');
-      el.className = "flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold border border-emerald-100 transition-all";
-      el.innerHTML = '<i data-lucide="cloud-check" class="w-3 h-3"></i> <span>Salvo na Nuvem</span>';
-      lucide.createIcons();
-    }
-    function showCloudError() {
-      const el = document.getElementById('cloud-status');
-      el.classList.remove('hidden');
-      el.className = "flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[10px] font-bold border border-rose-100 transition-all";
-      el.innerHTML = '<i data-lucide="cloud-off" class="w-3 h-3"></i> <span>Erro de Conexão</span>';
-      lucide.createIcons();
-    }
-    function showLocalSuccess() {
-      const el = document.getElementById('cloud-status');
-      el.classList.remove('hidden');
-      el.className = "flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[10px] font-bold border border-slate-200 transition-all";
-      el.innerHTML = '<i data-lucide="hard-drive" class="w-3 h-3"></i> <span>Salvo Localmente</span>';
+      if(status === 'syncing') {
+          el.className = "flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md text-[10px] font-bold border border-amber-100 transition-all";
+          el.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> <span>A guardar...</span>';
+      } else if (status === 'success') {
+          el.className = "flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold border border-emerald-100 transition-all";
+          el.innerHTML = '<i data-lucide="cloud-check" class="w-3 h-3"></i> <span>Nuvem Sincronizada</span>';
+      } else if (status === 'error') {
+          el.className = "flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[10px] font-bold border border-rose-100 transition-all";
+          el.innerHTML = '<i data-lucide="cloud-off" class="w-3 h-3"></i> <span>Erro de Conexão</span>';
+      } else {
+          el.className = "flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[10px] font-bold border border-slate-200 transition-all";
+          el.innerHTML = '<i data-lucide="hard-drive" class="w-3 h-3"></i> <span>Salvo Localmente</span>';
+      }
       lucide.createIcons();
     }
 
+    // SINCRONIZAÇÃO EM TEMPO REAL: PUXAR DADOS DOS OUTROS APARELHOS
+    async function syncFromCloud(silent = false) {
+      if(!GOOGLE_SHEETS_API_URL || GOOGLE_SHEETS_API_URL === "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") return;
+      
+      if(!silent) document.getElementById('loading-overlay').style.display = 'flex';
+      updateCloudStatus('syncing');
+      
+      try {
+        const response = await fetch(GOOGLE_SHEETS_API_URL);
+        const textResponse = await response.text();
+        if (textResponse && textResponse !== "null") {
+            const cloudData = JSON.parse(textResponse);
+            if (cloudData && cloudData.students) {
+                // Atualiza caso a nuvem tenha os mesmos ou mais alunos (para incluir fatos novos)
+                if(cloudData.students.length >= appState.students.length) {
+                    appState = cloudData;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                }
+            }
+        }
+        updateCloudStatus('success');
+      } catch(e) {
+        console.error("Erro a ler nuvem", e);
+        updateCloudStatus('error');
+      }
+      
+      if(!silent) document.getElementById('loading-overlay').style.display = 'none';
+      
+      // Atualiza a tela após puxar dados novos
+      renderClassPills(); renderStudentChips(); updateActiveStudentHeader(); updateSessionMetrics();
+      if(document.getElementById('tab-turmas').classList.contains('hidden') === false) renderStudentsTable();
+      if(document.getElementById('tab-relatorios').classList.contains('hidden') === false) renderClassSummaryCards();
+      
+      const firstInClass = appState.students.find(s => s.class === appState.selectedClass);
+      if(firstInClass && !currentStudentId) selectStudent(firstInClass.id);
+      checkActiveState();
+      lucide.createIcons();
+    }
+
+    // SINCRONIZAÇÃO EM TEMPO REAL: ENVIAR DADOS PARA OS OUTROS APARELHOS
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      
       if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-        showCloudSyncing();
-        try {
-            document.getElementById('hidden-payload').value = JSON.stringify(appState);
-            document.getElementById('hidden-form').submit();
-            setTimeout(showCloudSuccess, 1000); 
-        } catch(e) { console.error(e); showCloudError(); }
-      } else { showLocalSuccess(); }
-    }
-
-    async function initApp() {
-      document.getElementById('loading-overlay').style.display = 'flex';
-      if(GOOGLE_SHEETS_API_URL && GOOGLE_SHEETS_API_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-        try {
-          const response = await fetch(GOOGLE_SHEETS_API_URL);
-          const textResponse = await response.text();
-          if (textResponse && textResponse !== "null") {
-              const cloudData = JSON.parse(textResponse);
-              if (cloudData && cloudData.students && cloudData.students.length > 0) {
-                  appState = cloudData;
-                  showCloudSuccess();
-              } else { saveData(); }
-          } else { saveData(); }
-        } catch(e) { console.error("Offline", e); showCloudError(); }
+        updateCloudStatus('syncing');
+        fetch(GOOGLE_SHEETS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(appState)
+        })
+        .then(response => {
+            if(response.ok) updateCloudStatus('success');
+            else updateCloudStatus('error');
+        })
+        .catch(() => updateCloudStatus('error'));
+      } else {
+        updateCloudStatus('local');
       }
-      document.getElementById('loading-overlay').style.display = 'none';
-      if (!appState.classList) appState.classList = ['6º REG 1', '6º REG 2'];
-      const studentsOfClass = appState.students.filter(s => s.class === appState.selectedClass);
-      currentStudentId = studentsOfClass.length > 0 ? studentsOfClass[0].id : null;
-      renderClassPills(); renderStudentChips(); updateActiveStudentHeader(); updateSessionMetrics();
-      if (currentStudentId) selectStudent(currentStudentId); else checkActiveState();
-      lucide.createIcons();
     }
 
+    // O APLICATIVO ARRANCA IMEDIATAMENTE DA MEMÓRIA LOCAL E DEPOIS SINCRONIZA EM SEGUNDO PLANO
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Carrega Rápido da Memória Local
+      renderClassPills(); 
+      renderStudentChips(); 
+      updateActiveStudentHeader(); 
+      updateSessionMetrics();
+      const firstInClass = appState.students.find(s => s.class === appState.selectedClass);
+      if (firstInClass) selectStudent(firstInClass.id); else checkActiveState();
+      lucide.createIcons();
+      
+      // 2. Tenta Sincronizar em Segundo Plano (sem bloquear a tela)
+      setTimeout(() => syncFromCloud(true), 1500);
+    });
+
+    // MUDANÇA DE ABAS: FORÇA UMA ATUALIZAÇÃO LEVE DA NUVEM
     function switchTab(tabId) {
       ['afericao', 'turmas', 'relatorios'].forEach(id => {
         document.getElementById(`tab-${id}`).classList.toggle('hidden', id !== tabId);
@@ -348,8 +380,8 @@
           btn.className = "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
         }
       });
-      if (tabId === 'turmas') { populateClassDropdown(); renderStudentsTable(); }
-      if (tabId === 'relatorios') renderClassSummaryCards();
+      if (tabId === 'turmas') { populateClassDropdown(); renderStudentsTable(); syncFromCloud(true); }
+      if (tabId === 'relatorios') { renderClassSummaryCards(); syncFromCloud(true); }
       lucide.createIcons();
     }
 
@@ -552,9 +584,6 @@
       lucide.createIcons();
     }
 
-    // ==============================================================
-    // NOVO MÓDULO DE RELATÓRIOS PEDAGÓGICOS INDIVIDUAIS NOS CARDS
-    // ==============================================================
     function renderClassSummaryCards() {
       const container = document.getElementById('turmas-summary-cards'); 
       container.innerHTML = '';
@@ -569,9 +598,8 @@
         });
         
         const aproveitamento = totalFatos > 0 ? Math.round((totalAcertos/totalFatos)*100) : 0;
-        const isExp = appState.expandedClass === turma; // Estado para manter aberto
+        const isExp = appState.expandedClass === turma; 
 
-        // Gerar os cards dos alunos dessa turma
         let studentsHtml = '';
         if (students.length === 0) {
             studentsHtml = '<p class="text-xs text-slate-400 text-center py-4">Nenhum aluno cadastrado nesta turma.</p>';
@@ -614,7 +642,6 @@
             });
         }
 
-        // Criar o Card Principal da Turma
         const card = document.createElement('div');
         card.className = "bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4 mb-4 transition-all";
         card.innerHTML = `
@@ -650,14 +677,13 @@
       lucide.createIcons();
     }
 
-    // Função para abrir/fechar a lista de alunos nos Relatórios
     function toggleTurmaDetails(turma) {
         if (appState.expandedClass === turma) {
-            appState.expandedClass = null; // Fecha
+            appState.expandedClass = null; 
         } else {
-            appState.expandedClass = turma; // Abre
+            appState.expandedClass = turma; 
         }
-        renderClassSummaryCards(); // Recarrega os relatórios para mostrar a mudança
+        renderClassSummaryCards(); 
     }
 
     function exportDataJSON() {
@@ -676,28 +702,40 @@
     function generateSlipHTML(student) {
       const total = student.records.length;
       if(total === 0) return '';
+      
       const acertos = student.records.filter(r => r.status === 'acertou').length;
       const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
       const errouGeral = student.records.filter(r => r.status === 'pensou_trocou_errou' || r.status === 'errou').length;
+      
       const totalMult = student.records.filter(r => r.op === 'mult').length;
       const acertosMult = student.records.filter(r => r.op === 'mult' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+      
       const totalDiv = student.records.filter(r => r.op === 'div').length;
       const acertosDiv = student.records.filter(r => r.op === 'div' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+
       const aproveitamentoGeral = total > 0 ? Math.round(((acertos + pensouAcertou) / total) * 100) : 0;
-      let colorClass = ''; let feedbackMessage = '';
+      
+      let colorClass = '';
+      let feedbackMessage = '';
+      
       if(aproveitamentoGeral >= 80) {
-          colorClass = 'print-bg-green'; feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
+          colorClass = 'print-bg-green';
+          feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
       } else if (aproveitamentoGeral >= 50) {
-          colorClass = 'print-bg-yellow'; feedbackMessage = `⚠️ <strong>Bom trabalho!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. Precisa de um pouco mais de treino em casa para ganhar velocidade.`;
+          colorClass = 'print-bg-yellow';
+          feedbackMessage = `⚠️ <strong>Bom trabalho!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. Precisa de um pouco mais de treino em casa para ganhar velocidade.`;
       } else {
-          colorClass = 'print-bg-red'; feedbackMessage = `🚨 <strong>Alerta Pedagógico:</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. O(a) estudante precisa de ajuda em casa urgente para decorar os fatos básicos!`;
+          colorClass = 'print-bg-red';
+          feedbackMessage = `🚨 <strong>Alerta Pedagógico:</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento. O(a) estudante precisa de ajuda em casa urgente para decorar os fatos básicos!`;
       }
+      
       const today = new Date();
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('pt-BR');
       const currentDay = today.toLocaleDateString('pt-BR');
 
       return `
         <div class="avoid-break" style="border: 2px solid #1e293b; border-radius: 12px; padding: 20px; font-family: sans-serif; color: #000; margin-bottom: 5px; background: white; width: 100%; box-sizing: border-box;">
+           
            <div style="display: flex; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 15px;">
                <img src="logo.png" style="height: 55px; width: auto; margin-right: 15px;" />
                <div>
@@ -706,6 +744,7 @@
                    <p style="font-size: 12px; margin: 0; font-style: italic; color: #334155;">Boletim de Acompanhamento Pedagógico</p>
                </div>
            </div>
+
            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                <div>
                    <div style="margin-bottom: 4px;"><strong>Estudante:</strong> ${student.name}</div>
@@ -716,9 +755,11 @@
                    ${firstDay} a ${currentDay}
                </div>
            </div>
+
            <p style="font-size: 13px; line-height: 1.5; margin-bottom: 15px;">
                <strong>Olá, família!</strong> Apresentamos o desempenho da nossa avaliação oral contínua. O cálculo mental rápido é a base para o sucesso na matemática.
            </p>
+
            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px;">
                <thead>
                    <tr>
@@ -743,12 +784,15 @@
                    </tr>
                </tbody>
            </table>
+
            <div class="${colorClass}" style="border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 20px;">
                ${feedbackMessage}
            </div>
+
            <div style="font-size: 11px; font-style: italic; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 10px;">
                <strong style="color: #0f172a;">Detalhe da Avaliação:</strong> De ${total} fatos, o aluno acertou rápido (${acertos}), precisou pensar/corrigir (${pensouAcertou}), e errou ou teve muita dúvida em (${errouGeral}).
            </div>
+
            <div style="display: flex; justify-content: space-between; font-size: 12px; text-align: center; margin-top: 40px;">
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Professora Erlaine</div>
                <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Ciente do Responsável</div>
@@ -790,9 +834,6 @@
       document.getElementById('print-area').innerHTML = `<div style="font-family:sans-serif;padding:10px;"><div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #334155;padding-bottom:8px;margin-bottom:12px;"><div style="display:flex;align-items:center;gap:12px;"><img src="logo.png" style="height:50px;width:auto;" alt="Logo EEMA" /><div><h2 style="margin:0;font-size:15px;">ESCOLA ESTADUAL MESTRA AURORA</h2><h3 style="margin:2px 0;font-size:12px;">PROJETO: FATOS EM FOCO</h3><p style="margin:0;font-size:11px;color:#475569;">Professora Erlaine • Mapa Geral da Turma: <strong>${turma}</strong></p></div></div><div style="font-size:11px;color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr style="background:#f1f5f9;text-align:center; -webkit-print-color-adjust: exact; print-color-adjust: exact;"><th style="padding:5px;border:1px solid #cbd5e1;">#</th><th style="padding:5px;border:1px solid #cbd5e1;text-align:left;">Nome</th><th style="padding:5px;border:1px solid #cbd5e1;">Acertou</th><th style="padding:5px;border:1px solid #cbd5e1;">Pensou/Acertou</th><th style="padding:5px;border:1px solid #cbd5e1;">Pensou/Errou</th><th style="padding:5px;border:1px solid #cbd5e1;">Errou</th><th style="padding:5px;border:1px solid #cbd5e1;">Total</th></tr></thead><tbody>${rows}</tbody></table></div>`;
       window.print();
     }
-
-    initApp();
-
   </script>
 </body>
 </html>
