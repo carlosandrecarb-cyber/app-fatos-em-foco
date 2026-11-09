@@ -109,7 +109,8 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col items-center justify-start text-center relative overflow-hidden min-h-[420px]">
           <div class="w-full flex items-center justify-between mb-4">
-            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold" id="operation-buttons-container">
+              <!-- Botões gerados e atualizados pelo JavaScript agora -->
               <button onclick="setOperation('all')" id="op-btn-all" class="px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-xs font-bold">Misto</button>
               <button onclick="setOperation('mult')" id="op-btn-mult" class="px-3 py-1 rounded-lg text-slate-600">Multiplicação</button>
               <button onclick="setOperation('div')" id="op-btn-div" class="px-3 py-1 rounded-lg text-slate-600">Divisão</button>
@@ -127,6 +128,7 @@
             <div id="fact-progress-badge" class="mt-2 text-xs font-bold text-white bg-slate-800 px-4 py-1 rounded-full hidden shadow-sm">Iniciando...</div>
           </div>
 
+          <!-- ÁREA ATIVA GARANTIDA -->
           <div id="assessment-active-area" class="w-full flex-col items-center hidden">
             <div class="py-2 flex flex-col items-center relative w-full">
               <button onclick="generateNextFact()" title="Pular este fato" class="absolute right-0 top-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition flex flex-col items-center">
@@ -185,7 +187,7 @@
       </div>
     </section>
 
-    <!-- ABA 2: GESTÃO E ALUNOS -->
+    <!-- ABA 2: GESTÃO -->
     <section id="tab-turmas" class="hidden space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
@@ -209,7 +211,6 @@
             <button onclick="importBulkStudents()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">Importar em Lote para a Turma</button>
           </div>
         </div>
-
         <div class="md:col-span-2 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700">Lista Geral de Estudantes</h2>
@@ -220,13 +221,7 @@
           <div class="overflow-x-auto max-h-96 custom-scroll">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] sticky top-0">
-                <tr>
-                  <th class="p-2.5 rounded-l-lg">Nome</th>
-                  <th class="p-2.5">Turma</th>
-                  <th class="p-2.5 text-center">Fatos Feitos</th>
-                  <th class="p-2.5 text-center">% Acertos</th>
-                  <th class="p-2.5 rounded-r-lg text-right">Ações (Inclui Excluir)</th>
-                </tr>
+                <tr><th class="p-2.5 rounded-l-lg">Nome</th><th class="p-2.5">Turma</th><th class="p-2.5 text-center">Fatos Feitos</th><th class="p-2.5 text-center">% Acertos</th><th class="p-2.5 rounded-r-lg text-right">Ações</th></tr>
               </thead>
               <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -260,18 +255,21 @@
   <script>
     const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbywxwPSF572SyIXc88RUn_3DaiT4nL_XrwOYEB3WXGcWPexgL6Vmx-d6anMq7NDHDxFZg/exec"; 
 
-    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V13';
+    const STORAGE_KEY = 'FATOS_EM_FOCO_FINAL_V14';
     const defaultState = { classList: ['6º REG 1', '6º REG 2'], selectedClass: '6º REG 1', operationMode: 'all', students: [] };
     
     let appState = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!appState) {
-        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V12')) || 
+        appState = JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V13')) || 
+                   JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V12')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V11')) || 
                    JSON.parse(localStorage.getItem('FATOS_EM_FOCO_FINAL_V10')) || 
                    defaultState;
     }
 
     if (!appState.classList) appState.classList = ['6º REG 1', '6º REG 2'];
+    if (!appState.operationMode) appState.operationMode = 'all'; // Proteção contra memória antiga
+
     let currentStudentId = appState.students.length > 0 ? appState.students[0].id : null;
     let currentFact = { text: '7 × 8', answer: 56, op: 'mult' };
     let timerInterval = null;
@@ -310,6 +308,7 @@
                     appState = cloudData;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
                     renderClassPills(); renderStudentChips(); updateActiveStudentHeader(); updateSessionMetrics();
+                    updateOperationUI(); // Garante visual atualizado
                     if(!document.getElementById('tab-turmas').classList.contains('hidden')) renderStudentsTable();
                     if(!document.getElementById('tab-relatorios').classList.contains('hidden')) renderClassSummaryCards();
                     const firstInClass = appState.students.find(s => s.class === appState.selectedClass);
@@ -347,6 +346,8 @@
       renderStudentChips(); 
       updateActiveStudentHeader(); 
       updateSessionMetrics();
+      updateOperationUI(); // CORREÇÃO AQUI: Garante que o botão da memória fica selecionado
+      
       const firstInClass = appState.students.find(s => s.class === appState.selectedClass);
       if (firstInClass) selectStudent(firstInClass.id); else checkActiveState();
       lucide.createIcons();
@@ -442,9 +443,19 @@
       timerDisplay.classList.remove('opacity-0');
     }
 
+    // CORREÇÃO: SINCRONIZA O VISUAL DOS BOTÕES COM A MEMÓRIA
+    function updateOperationUI() {
+      ['all', 'mult', 'div'].forEach(m => {
+          document.getElementById(`op-btn-${m}`).className = m === appState.operationMode 
+          ? "px-3 py-1 rounded-lg bg-white text-indigo-600 font-bold shadow-xs" 
+          : "px-3 py-1 rounded-lg text-slate-600 font-medium";
+      });
+    }
+
     function setOperation(op) {
       appState.operationMode = op;
-      ['all', 'mult', 'div'].forEach(m => document.getElementById(`op-btn-${m}`).className = m === op ? "px-3 py-1 rounded-lg bg-white text-indigo-600 font-bold shadow-xs" : "px-3 py-1 rounded-lg text-slate-600 font-medium");
+      updateOperationUI(); // Atualiza a cor dos botões na tela
+      saveData();
       generateNextFact();
     }
 
@@ -459,12 +470,26 @@
       timerInterval = setInterval(() => { if (--timeLeft <= 0) { timeLeft = 0; clearInterval(timerInterval); } updateTimerUI(); }, 1000);
     }
 
+    // CORREÇÃO: LÓGICA DO MISTO ISOLADA DE FORMA ESTRITA E SEM FALHAS
     function generateNextFact() {
       if (!appState.students.find(s => s.id === currentStudentId)) return;
-      const isMult = appState.operationMode === 'mult' ? true : appState.operationMode === 'div' ? false : Math.random() > 0.5;
-      const a = Math.floor(Math.random() * 9) + 2, b = Math.floor(Math.random() * 9) + 2;
+      
+      let isMult;
+      if (appState.operationMode === 'mult') {
+        isMult = true;
+      } else if (appState.operationMode === 'div') {
+        isMult = false;
+      } else {
+        // Misto: exatos 50% de probabilidade para cada operação
+        isMult = Math.random() >= 0.5;
+      }
+      
+      const a = Math.floor(Math.random() * 9) + 2;
+      const b = Math.floor(Math.random() * 9) + 2;
       const operationType = isMult ? 'mult' : 'div';
+      
       currentFact = isMult ? { text: `${a} × ${b}`, answer: a * b, op: operationType } : { text: `${a * b} ÷ ${a}`, answer: b, op: operationType };
+      
       document.getElementById('fact-display').innerText = currentFact.text;
       document.getElementById('answer-text').innerText = currentFact.answer;
       startTimer();
@@ -549,16 +574,12 @@
       }
     }
 
-    // A FUNÇÃO DA LIXEIRA EXPLICADA
     function deleteStudent(id) {
       const student = appState.students.find(s => s.id === id);
       if (confirm(`Excluir DEFINITIVAMENTE o estudante ${student.name} e todo o seu histórico?`)) {
         appState.students = appState.students.filter(s => s.id !== id);
         if (currentStudentId === id) currentStudentId = null;
-        saveData(); 
-        renderStudentsTable(); 
-        renderStudentChips(); 
-        checkActiveState();
+        saveData(); renderStudentsTable(); renderStudentChips(); checkActiveState();
       }
     }
 
@@ -567,16 +588,12 @@
       appState.students.forEach(s => {
         const total = s.records.length, acertos = s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length;
         const perc = total > 0 ? Math.round((acertos / total) * 100) : 0;
-        
-        // A LIXEIRA ESTÁ AQUI NA ÚLTIMA COLUNA DA TABELA, BEM DESTACADA A VERMELHO!
         tbody.insertAdjacentHTML('beforeend', `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
             <td class="p-2.5 font-bold text-slate-800">${s.name}</td>
             <td class="p-2.5 text-slate-500 font-semibold">${s.class}</td>
             <td class="p-2.5 text-center font-semibold"><span>${total}</span></td>
-            <td class="p-2.5 text-center">
-              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${perc >= 70 ? 'bg-emerald-100 text-emerald-800' : perc >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}">${perc}%</span>
-            </td>
+            <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${perc >= 70 ? 'bg-emerald-100 text-emerald-800' : perc >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}">${perc}%</span></td>
             <td class="p-2.5 text-right flex items-center justify-end gap-1.5">
               <button onclick="printStudentSheet('${s.id}')" title="Imprimir" class="p-1.5 text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-colors"><i data-lucide="printer" class="w-3.5 h-3.5"></i></button>
               <button onclick="shareWhatsApp('${s.id}')" title="WhatsApp" class="p-1.5 text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"><i data-lucide="send" class="w-3.5 h-3.5"></i></button>
@@ -605,7 +622,6 @@
                 const sTotal = s.records.length;
                 const sAcertos = s.records.filter(r => r.status === 'acertou' || r.status === 'pensou_trocou_acertou').length;
                 const sPerc = sTotal > 0 ? Math.round((sAcertos/sTotal)*100) : 0;
-                
                 let colorBg = 'bg-slate-50', colorText = 'text-slate-600', feedback = 'Sem dados suficientes';
                 
                 if (sTotal > 0) {
@@ -620,7 +636,6 @@
                         feedback = 'Alerta! Intervenção necessária na memorização básica.';
                     }
                 }
-
                 studentsHtml += `
                     <div class="flex flex-col sm:flex-row items-center justify-between p-3 rounded-xl border ${colorBg} mb-2 transition-all">
                         <div class="w-full sm:w-1/2 mb-2 sm:mb-0">
@@ -673,11 +688,8 @@
     }
 
     function toggleTurmaDetails(turma) {
-        if (appState.expandedClass === turma) {
-            appState.expandedClass = null; 
-        } else {
-            appState.expandedClass = turma; 
-        }
+        if (appState.expandedClass === turma) appState.expandedClass = null; 
+        else appState.expandedClass = turma; 
         renderClassSummaryCards(); 
     }
 
@@ -701,11 +713,15 @@
       const acertos = student.records.filter(r => r.status === 'acertou').length;
       const pensouAcertou = student.records.filter(r => r.status === 'pensou_trocou_acertou').length;
       const errouGeral = student.records.filter(r => r.status === 'pensou_trocou_errou' || r.status === 'errou').length;
+      
       const totalMult = student.records.filter(r => r.op === 'mult').length;
       const acertosMult = student.records.filter(r => r.op === 'mult' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+      
       const totalDiv = student.records.filter(r => r.op === 'div').length;
       const acertosDiv = student.records.filter(r => r.op === 'div' && (r.status === 'acertou' || r.status === 'pensou_trocou_acertou')).length;
+
       const aproveitamentoGeral = total > 0 ? Math.round(((acertos + pensouAcertou) / total) * 100) : 0;
+      
       let colorClass = ''; let feedbackMessage = '';
       if(aproveitamentoGeral >= 80) {
           colorClass = 'print-bg-green'; feedbackMessage = `🎉 <strong>Excelente!</strong> Atingiu ${aproveitamentoGeral}% de aproveitamento geral. O raciocínio lógico está bastante ágil!`;
